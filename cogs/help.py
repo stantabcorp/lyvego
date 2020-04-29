@@ -13,7 +13,11 @@ class Help(commands.Cog):
 
     @commands.command(name="help", aliases=["h"])
     async def help(self, ctx: commands.Context):
-        await ctx.send(f"{ctx.author.mention} help test command")
+        embed = discord.Embed(
+            title="test"
+        )
+        embed.set_thumbnail(url=ctx.me.avatar_url)
+        await ctx.send(embed=embed)
 
 
 def setup(bot):

@@ -1,14 +1,17 @@
 import asyncio
+import atexit
 import logging
 import os
+import sys
 import time
-import signal
+from typing import Optional
 
 import discord
 from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import when_mentioned_or
 
+from src.db import Pool
 
 logger = logging.getLogger("lyvego")
 logger.setLevel(logging.DEBUG)
@@ -24,7 +27,7 @@ handler.setFormatter(logging.Formatter(
 logger.addHandler(handler)
 
 
-class Lyvego(commands.AutoShardedBot):
+class Lyvego(commands.AutoShardedBot, Pool):
     def __init__(self, *args, loop=None, **kwargs):
         super().__init__(
             command_prefix="!",
@@ -33,11 +36,22 @@ class Lyvego(commands.AutoShardedBot):
             ),
             status=discord.Status.dnd
         )
+        super(Pool, self).__init__()
+        self.http_session = None
+        self._pool_created = False
+        self.connected = False
+        self.pool = None
+        self.color = 0x6441a5
+        self.color_str = str(hex(self.color))[2:]
+        self.red = 0xde1616
+        self.green = 0x17ad3f
+        self.blue = 0x158ed4
+        self.pool_loop = asyncio.get_event_loop()
         self.remove_command("help")
         self.loader()
-        self.http_session = None
 
-    def loader(self, reloading: bool=False):
+
+    def loader(self, reloading: Optional[bool]=False):
         for file in os.listdir("cogs/"):
             try:
                 if file.endswith(".py"):
@@ -50,43 +64,66 @@ class Lyvego(commands.AutoShardedBot):
                 logger.exception(f"Fail to load {file}")
 
     async def on_guild_join(self, guild: discord.Guild):
-        pass # TODO: request API
+        await self.wait_until_ready()
+        r = await self.http_session.request(
+            method="POST",
+            url="https://api.lyvego.com/v1/bot/server",
+            json={
+                "discord_id": guild.id,
+                "owner_id": guild.owner_id,
+                "name": guild.name,
+                "icon": guild.icon_url._url,
+                "region": guild.region.name
+            }
+        )
+        print("new guild")
+
+    async def on_guild_remove(self, guild: discord.Guild):
+        await self.wait_until_ready()
+        r = await self.http_session.request(
+            method="DELETE",
+            url=f"https://api.lyvego.com/v1/bot/server/{guild.id}",
+        )
+        print(f"{guild.name} removed")
 
     async def on_command_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send('{} This command is ratelimited, please try again in {:.2f}s'.format(ctx.author.mention, error.retry_after))
         else:
+            await ctx.send(error)
             raise error
-
-    async def on_command(self, ctx: commands.Context):
-        print(ctx.author)
 
     async def on_ready(self):
         if self.http_session is None:
             self.http_session = ClientSession()
+        if self.pool is None:
+            await self.main()
         await self.wait_until_ready()
-        while not self.is_closed():
-            await self.change_presence(
-                activity=discord.Game(
-                    name=f"[!help] | Waiting alerts from {len(self.guilds)} servers"
-                )
-            )
-            await asyncio.sleep(60)
+        print(self.pool_loop)
 
-    async def sig_handler(self, sig, _):
+
+        await self.change_presence(
+            activity=discord.Activity(
+                name=f"lyvego.com | [!help]",
+                type=discord.ActivityType.watching
+            )
+        )
+
+    def _exiting(self):
         print("dsq")
         try:
-            await self.http_session.close()
-            logger.info("Closing http session")
+            self.logout()
+            self.close()
+            logger.info("Logout")
         except Exception as e:
             logger.exception(e, exc_info=True)
         finally:
             logger.info("Lyvego has been shutted down")
+            sys.exit(0)
 
     def run(self, token, *args, **kwargs):
-        signal.signal(signal.SIGINT, self.sig_handler)
+        # atexit.register(self._exiting)
         super().run(token, *args, **kwargs)
-        logger.info("qsd")
 
 
 
