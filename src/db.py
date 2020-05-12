@@ -1,66 +1,44 @@
 import os
-from databases import Database
 import asyncio
 import aiomysql
 
-HOST = os.environ["HOST"]
-PORT = 3306
-USER = os.environ["USER"]
-PASSWORD = os.environ["PASSWORD"]
 
 class Pool:
-    async def _connect(self):
-
-        if not self._pool_created:
-            print("creating pool")
-
-            self.pool = await aiomysql.create_pool(
-                host=HOST,
-                port=PORT,
-                user=USER,
-                password=PASSWORD,
-                db=USER,
-                loop=self.pool_loop
-            )
-            self._pool_created = True
-            self.connected = True
-            # await self.pool.connect()
-
-    async def main(self):
-        if not self.connected:
-            await self._connect()
-
-        # await self.clean()
-        # await self.insert()
-        await self.query()
-
-    async def insert(self):
+    async def insert(self, channel_id, message_id, streamer_id, on_end, on_change):
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("INSERT INTO bot_messages(channel_id, message_id, streamer_id) VALUES(%s, %s, %s)", ("test", "test", "test", ))
+                await cur.execute("INSERT INTO bot_messages(channel_id, message_id, streamer_id, on_end, on_change) VALUES(%s, %s, %s, %s, %s)", (channel_id, message_id, streamer_id, on_end, on_change, ))
                 await conn.commit()
                 await cur.close()
 
-    async def clean(self):
+    async def clean_all(self):
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cur:
                 await cur.execute("DELETE FROM bot_messages")
                 await conn.commit()
                 await cur.close()
 
+    async def clean(self, message_id):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("DELETE FROM bot_messages WHERE message_id=%s", (message_id, ))
+                await conn.commit()
+                await cur.close()
+
+    async def select_message(self, streamer_id):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cur:
+                await cur.execute("SELECT * FROM bot_messages WHERE streamer_id=%s", (streamer_id, ))
+                r = await cur.fetchall()
+                print(r)
+                await cur.close()
+                return r
+
 
     async def query(self):
         async with self.pool.acquire() as conn:
-            async with conn.cursor() as cur:
+            async with conn.cursor(aiomysql.DictCursor) as cur:
                 await cur.execute("SELECT * FROM bot_messages")
-                (r,) = await cur.fetchall()
-                print(r)
+                r = await cur.fetchall()
                 await cur.close()
-
-
-# if __name__ == "__main__":
-
-
-#     loop = asyncio.get_event_loop()
-#     pool = Pool(loop=loop)
-#     loop.run_until_complete(pool.main())
+                return r

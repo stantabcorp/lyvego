@@ -10,7 +10,6 @@ import discord
 from aiohttp import web
 from discord.ext import commands
 
-from src.emojis import flags
 from src.utils import API_KEY, dctt
 
 
@@ -44,15 +43,49 @@ class Receiver(commands.Cog):
     async def _stream_event(self, events):
         try:
             for event in events:
-                try:
-                    channel = self.bot.get_channel(int(event.channel))
-                    embed = self.on_live_embed(event.embed, channel.guild)
-                    msg = await channel.send(
-                        embed=embed,
-                        content=event.message
-                    )
-                except Exception as e:
-                    logger.exception(e, exc_info=True)
+                if event.status == "ended" and event.updates.on_end:
+                    messages = await self.bot.select_message(event.streamer)
+                    print(messages)
+                    for message in messages:
+                        try:
+                            if message["on_end"]:
+                                print(int(message["message_id"]))
+                                channel = self.bot.get_channel(int(event.channel))
+                                msg = await channel.fetch_message(int(message["message_id"]))
+                                await self.bot.clean(message["message_id"])
+                                await msg.delete()
+                        except:
+                            pass
+                elif event.status == "changed":
+                    messages = await self.bot.select_message(event.streamer)
+                    checker = []
+                    for c in messages:
+                        for v in c.values():
+                            checker.append(v)
+                    print(checker)
+                    print(event.streamer in checker and event.channel in checker)
+                    if event.streamer in checker and event.channel in checker:
+                        print(messages)
+                        for message in messages:
+                            try:
+                                if message["on_change"]:
+                                    print(int(message["message_id"]))
+                                    channel = self.bot.get_channel(int(event.channel))
+                                    msg = await channel.fetch_message(int(message["message_id"]))
+                                    embed = self.on_live_embed(event.embed, channel.guild)
+                                    await msg.edit(embed=embed)
+                                    print("message edited")
+                            except:
+                                pass
+                    else:
+                        channel = self.bot.get_channel(int(event.channel))
+                        embed = self.on_live_embed(event.embed, channel.guild)
+                        msg = await channel.send(
+                            embed=embed,
+                            content=event.message
+                        )
+                        if event.updates.on_end or event.updates.on_change:
+                            await self.bot.insert(event.channel, str(msg.id), event.streamer, event.updates.on_end, event.updates.on_change)
         except Exception as e:
             logger.exception(e, exc_info=True)
 
@@ -129,6 +162,10 @@ class Receiver(commands.Cog):
             logger.info(e, exc_info=True)
 
 
+    async def _edit_ending(self, events):
+        pass
+
+
     async def handler(self, request):
         if request.headers["SuperApi"] == API_KEY:
             data = await request.text()
@@ -154,8 +191,8 @@ class Receiver(commands.Cog):
         embed = discord.Embed(
             title="TOP.GG upvote",
             description="Your vote has been register! Thank you❤️! You can vote again in 12 hours on the same [link](https://top.gg/bot/702648685263323187/vote).\nIf you have any question come over my [discord server](https://discord.gg/E4nVPd2)",
-            timestamp=datetime.datetime.utcnow(),
-            color=utils.COLOR
+            timestamp=dt.datetime.utcnow(),
+            color=self.bot.color
         )
         embed.set_thumbnail(url="https://top.gg/images/dblnew.png")
         embed.set_footer(
@@ -177,7 +214,7 @@ class Receiver(commands.Cog):
         app.router.add_get("/get", self.test)
         runner = web.AppRunner(app)
         await runner.setup()
-        site = web.TCPSite(runner, 'localhost', 8080)
+        site = web.TCPSite(runner, '', 8080)
         await site.start()
         print("Server running")
 
