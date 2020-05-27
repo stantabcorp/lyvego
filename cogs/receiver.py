@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import time
+import pymysql
 from collections import namedtuple
 
 import discord
@@ -45,7 +46,6 @@ class Receiver(commands.Cog):
             for event in events:
                 if event.status == "ended" and event.updates.on_end:
                     messages = await self.bot.select_message(event.streamer)
-                    print(messages)
                     for message in messages:
                         try:
                             if message["on_end"]:
@@ -54,6 +54,7 @@ class Receiver(commands.Cog):
                                 msg = await channel.fetch_message(int(message["message_id"]))
                                 await self.bot.clean(message["message_id"])
                                 await msg.delete()
+                                logger.info(f"{msg.id} deleted")
                         except:
                             pass
                 elif event.status == "changed":
@@ -62,21 +63,20 @@ class Receiver(commands.Cog):
                     for c in messages:
                         for v in c.values():
                             checker.append(v)
-                    print(checker)
-                    print(event.streamer in checker and event.channel in checker)
-                    if event.streamer in checker and event.channel in checker:
-                        print(messages)
+                    if (event.streamer and event.channel) in checker:
+                        tmp_msg = []
                         for message in messages:
                             try:
-                                if message["on_change"]:
-                                    print(int(message["message_id"]))
+                                print(tmp_msg)
+                                if message["on_change"] and msg.id not in tmp_msg:
                                     channel = self.bot.get_channel(int(event.channel))
                                     msg = await channel.fetch_message(int(message["message_id"]))
                                     embed = self.on_live_embed(event.embed, channel.guild)
                                     await msg.edit(embed=embed)
-                                    print("message edited")
-                            except:
-                                pass
+                                    tmp_msg.append(msg.id)
+                                    logger.info(f"{msg.id} edited")
+                            except Exception as e:
+                                logger.exception(e, exc_info=True)
                     else:
                         channel = self.bot.get_channel(int(event.channel))
                         embed = self.on_live_embed(event.embed, channel.guild)
@@ -85,7 +85,9 @@ class Receiver(commands.Cog):
                             content=event.message
                         )
                         if event.updates.on_end or event.updates.on_change:
-                            await self.bot.insert(event.channel, str(msg.id), event.streamer, event.updates.on_end, event.updates.on_change)
+                            await self.bot.insert(
+                                event.channel, str(msg.id), event.streamer,
+                                event.updates.on_end, event.updates.on_change)
         except Exception as e:
             logger.exception(e, exc_info=True)
 
@@ -123,11 +125,11 @@ class Receiver(commands.Cog):
                         description=event.message
                     )
                     embed.set_author(
-                        name=f"New follower for {event.details.username}",
+                        name="New follower",
                         icon_url=event.details.avatar
                     )
                     embed.set_footer(
-                        text="New follow ❤️"
+                        text="New follow 💜"
                     )
                     await channel.send(embed=embed)
                 except:
@@ -161,17 +163,12 @@ class Receiver(commands.Cog):
         except Exception as e:
             logger.info(e, exc_info=True)
 
-
-    async def _edit_ending(self, events):
-        pass
-
-
     async def handler(self, request):
         if request.headers["SuperApi"] == API_KEY:
             data = await request.text()
             events = json.loads(data, object_hook=self._json_object_hook)
-            print(events)
             event_type = events[0].type
+            print(event_type)
             if event_type == "stream":
                 await self._stream_event(events)
             elif event_type == "moderator":
@@ -183,31 +180,68 @@ class Receiver(commands.Cog):
 
             return web.Response()
 
-
     async def webhook_handler(self, request):
         data = await request.json()
         user = self.bot.get_user(int(data['user']))
+        channel = self.bot.get_channel(715158139242020915)
+        # await channel.send(f"{user} just voted for lyvego OwO")
+        is_accepted = await self.bot.get_topgg_user(user.id)
+        if not is_accepted:
+            return
         logger.info("voted")
         embed = discord.Embed(
             title="TOP.GG upvote",
-            description="Your vote has been register! Thank you❤️! You can vote again in 12 hours on the same [link](https://top.gg/bot/702648685263323187/vote).\nIf you have any question come over my [discord server](https://discord.gg/E4nVPd2)",
+            description="Your vote has been register! Thank you ❤️\nYou can vote again in 12 hours on the same [link](https://top.gg/bot/702648685263323187/vote).\nIf you have any question come over our [discord server](https://discord.gg/E4nVPd2)\nYou can react below to disable notification on upvote.",
             timestamp=dt.datetime.utcnow(),
-            color=self.bot.color
+            color=self.bot.blue
         )
         embed.set_thumbnail(url="https://top.gg/images/dblnew.png")
         embed.set_footer(
-            text="Made by Taki#0853 (WIP)",
+            text="lyvego.com",
             icon_url=user.avatar_url
         )
-        await user.send(embed=embed)
-        # channel = self.bot.get_channel(702682984519696424)
+        dm_notif = await user.send(embed=embed)
+
+
+        resp = web.Response()
+        try:
+            await self.bot.insert_topgg(str(user.id), str(user.name))
+        except pymysql.err.IntegrityError: # already in the db
+            pass
+
+        if user.id == 162200556234866688:
+            bot_reaction = await dm_notif.add_reaction("<a:wrong_checkmark:709737435889664112>")
+
+        def check(reaction, user_react):
+            return user == user_react and "<a:wrong_checkmark:709737435889664112>" == str(reaction.emoji)
+
+        while 1:
+            try:
+
+                reaction, user_react = await self.bot.wait_for('reaction_add', check=check, timeout=360.0)
+            except asyncio.TimeoutError:
+                return await dm_notif.delete()
+
+            if "<a:wrong_checkmark:709737435889664112>" == str(reaction.emoji):
+                try:
+                    await self.bot.change_topgg(str(user.id))
+                    break
+                except Exception as e:
+                    logger.exception(e, exc_info=True)
+
+        try:
+            success_disable = await user.send("Successfully disabled")
+            await success_disable.add_reaction("<a:valid_checkmark:709737579460952145>")
+        except Exception as e:
+            logger.exception(e, exc_info=True)
+
         # await channel.send(data)
-        return web.Response()
 
     async def test(self, request):
         return web.Response(text="yeee")
 
     async def run_server(self):
+        await self.bot.wait_until_ready()
         app = web.Application()
         app.router.add_post("/", self.handler)
         app.router.add_post("/webhook", self.webhook_handler)
@@ -217,7 +251,6 @@ class Receiver(commands.Cog):
         site = web.TCPSite(runner, '', 8080)
         await site.start()
         print("Server running")
-
 
 
 def setup(bot):

@@ -25,20 +25,23 @@ class Settings(commands.Cog):
             await ctx.send(e)
 
 
-    @commands.command(name="stream")
-    async def add_streamer(self, ctx, streamer):
+    @commands.command(name="follow")
+    @commands.cooldown(4, 30, commands.BucketType.user)
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    async def add_follow(self, ctx: commands.Context, streamer: str):
         resp = await rh.post_streamer(
             ctx,
             self.bot.http_session,
             json=[
                 {
-                "type": "live_announcement",
+                "type": "follow_announcement",
                 "channel_id": ctx.channel.id,
                 "streamer": streamer,
-                "message": "@everyone Hey {streamer} is live on {game} ! Go check him out",
+                "message": "{follower} just started following {followed}.",
                 "color": self.bot.color_str,
                 "update_message_on_change": False,
-                "delete_message_on_change": True
+                "delete_message_on_change": False
                 }
             ]
         )
@@ -62,13 +65,57 @@ class Settings(commands.Cog):
                 pass
             await ctx.send(embed=embed)
         else:
-            raise errors.StreamerNotFound("This streamer doesn't exist, please retry with a valid one.")
+            raise errors.StreamerNotFound(f"{ctx.author} This streamer doesn't exist, please retry with a valid one.")
+
+    @commands.command(name="stream")
+    @commands.cooldown(4, 30, commands.BucketType.user)
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    async def add_streamer(self, ctx: commands.Context, streamer: str):
+        resp = await rh.post_streamer(
+            ctx,
+            self.bot.http_session,
+            json=[
+                {
+                "type": "live_announcement",
+                "channel_id": ctx.channel.id,
+                "streamer": streamer,
+                "message": "@everyone Hey {streamer} is live on {game} ! Go check him out",
+                "color": self.bot.color_str,
+                "update_message_on_change": False,
+                "delete_message_on_change": False
+                }
+            ]
+        )
+        if resp.status in range(200, 300):
+
+            embed = discord.Embed(
+                description=f"⚙️ You can fully configure the bot on [lyvego.com]({self.bot.lyvego_url})",
+                color=self.bot.color,
+                timestamp=dctt()
+            )
+            embed.set_author(
+                name=f"{streamer} successfully added",
+                icon_url=ctx.author.avatar_url
+            )
+            embed.set_thumbnail(
+                url=ctx.me.avatar_url
+            )
+            try:
+                await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
+            except:
+                pass
+            await ctx.send(embed=embed)
+        else:
+            raise errors.StreamerNotFound(f"{ctx.author} This streamer doesn't exist, please retry with a valid one.")
 
     @commands.command(aliases=["clips", "c"])
+    @commands.cooldown(4, 30, commands.BucketType.user)
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
     async def clip(self, ctx: commands.Context, streamer: str):
         try:
             clips = await rh.top_clips(self.bot.http_session, streamer)
-            print(clips, type(clips))
             if clips == None:
                 raise errors.StreamerNotFound("This streamer doesn't exist, please retry with a valid one.")
             clips = clips["clips"]

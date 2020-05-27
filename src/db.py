@@ -30,15 +30,33 @@ class Pool:
             async with conn.cursor(aiomysql.DictCursor) as cur:
                 await cur.execute("SELECT * FROM bot_messages WHERE streamer_id=%s", (streamer_id, ))
                 r = await cur.fetchall()
-                print(r)
                 await cur.close()
                 return r
 
 
-    async def query(self):
+    async def get_topgg_user(self, id):
         async with self.pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cur:
-                await cur.execute("SELECT * FROM bot_messages")
-                r = await cur.fetchall()
+                await cur.execute("SELECT is_accepted FROM topgg_users WHERE id=%s", (id, ))
+                r = await cur.fetchone()
                 await cur.close()
-                return r
+                return r["is_accepted"]
+
+    async def insert_topgg(self, id, name):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("INSERT INTO topgg_users(id, name) VALUES(%s, %s)", (id, name, ))
+                await conn.commit()
+                await cur.close()
+
+    async def change_topgg(self, id):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("UPDATE topgg_users SET is_accepted=0 WHERE id=%s", (id, ))
+                await conn.commit()
+                await cur.close()
+
+    def _close(self):
+        self.pool.close()
+        self.pool.wait_closed()
+        self.loop.close()

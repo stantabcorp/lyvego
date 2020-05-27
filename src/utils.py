@@ -27,9 +27,7 @@ class RequestHandler:
             headers={"Authorization": AUTHORIZATION},
             **kwargs
         )
-        if resp.status >= 200 and resp.status <= 299:
-            return resp
-        return None
+        return resp
 
     async def get_streamer(self, ctx: commands.Context, session: ClientSession):
         """
