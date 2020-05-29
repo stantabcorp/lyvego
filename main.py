@@ -1,5 +1,6 @@
 import asyncio
 import atexit
+import json
 import logging
 import os
 import sys
@@ -12,9 +13,9 @@ from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import when_mentioned_or
 
+from src.constants import HOST, PASSWORD, PORT, USER
 from src.db import Pool
 from src.utils import AUTHORIZATION
-
 
 logger = logging.getLogger("lyvego")
 logger.setLevel(logging.DEBUG)
@@ -29,10 +30,6 @@ handler.setFormatter(logging.Formatter(
     )
 logger.addHandler(handler)
 
-HOST = os.environ["HOST"]
-PORT = 3306
-USER = os.environ["USER"]
-PASSWORD = os.environ["PASSWORD"]
 
 class Lyvego(commands.AutoShardedBot, Pool):
     def __init__(self, *args, loop=None, **kwargs):
@@ -46,11 +43,12 @@ class Lyvego(commands.AutoShardedBot, Pool):
         super(Pool, self).__init__()
         self.http_session = None
         self.pool = None
-        self.color = 0x6441a5
-        self.color_str = str(hex(self.color))[2:]
         self.red = 0xde1616
         self.green = 0x17ad3f
         self.blue = 0x158ed4
+        self.color = 0x6441a5
+        self.color_str = str(hex(self.color))[2:]
+        self.locales = self.init_locales()
         self.lyvego_url = "https://lyvego.com"
         self.remove_command("help")
         self.loader()
@@ -66,6 +64,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
                     logger.info(f"{file} loaded")
             except Exception:
                 logger.exception(f"Fail to load {file}")
+
 
 
     async def on_guild_join(self, guild: discord.Guild):
@@ -112,23 +111,79 @@ class Lyvego(commands.AutoShardedBot, Pool):
             except AttributeError:
                 await ctx.send(error)
 
+    @staticmethod
+    def _value_exist(L, v):
+        try:
+            return isinstance(L.index(v), int)
+        except ValueError:
+            return False
+
+    async def _verify_servers(self):
+        servers = await self.get_guilds_registered()
+        bot_guilds_ids = []
+        for bguild in self.guilds:
+            bot_guilds_ids.append(str(bguild.id))
+            if not self._value_exist(servers, str(bguild.id)):
+                try:
+                    await self.http_session.request(
+                        method="POST",
+                        url="https://api.lyvego.com/v1/bot/server",
+                        headers={"Authorization": AUTHORIZATION},
+                        json={
+                            "discord_id": bguild.id,
+                            "owner_id": bguild.owner_id,
+                            "name": bguild.name,
+                            "icon": bguild.icon_url._url,
+                            "region": bguild.region.name
+                        }
+                    )
+                    logger.info(f"{bguild.id} added by verifier")
+                except:
+                    pass
+        for bdsid in servers:
+            if not self._value_exist(bot_guilds_ids, bdsid):
+                try:
+                    await self.http_session.request(
+                        method="DELETE",
+                        url=f"https://api.lyvego.com/v1/bot/server/{bdsid}",
+                        headers={"Authorization": AUTHORIZATION}
+                    )
+                    logger.info(f"{bdsid} removed by verifier")
+                except:
+                    pass
+
+    def init_locales(self):
+        locales = {}
+        for file in os.listdir("locales/"):
+            with open(f"locales/{file}", "r") as f:
+                locales[file[:2]] = json.load(f)
+        return locales
+
     async def on_ready(self):
-        # Create http session
         if self.http_session is None:
+            # Create http session
             self.http_session = ClientSession()
-        # Create pool
-        if self.pool is None:
-            self.pool = await aiomysql.create_pool(
-                    host=HOST,
-                    port=PORT,
-                    user=USER,
-                    password=PASSWORD,
-                    db=USER,
-                    loop=self.loop,
-                    maxsize=30
-                )
-            logger.info("pool created")
-        logger.info("bot ready")
+
+        try:
+            # Create pool
+            if self.pool is None:
+                try:
+                    self.pool = await aiomysql.create_pool(
+                            host=HOST,
+                            port=PORT,
+                            user=USER,
+                            password=PASSWORD,
+                            db=USER,
+                            loop=self.loop,
+                            maxsize=20
+                        )
+                    await self._verify_servers()
+                    logger.info("Guilds verified")
+                except Exception as e:
+                    logger.exception(e, exc_info=True)
+
+        except Exception as e:
+            logger.exception(e, exc_info=True)
 
         await self.change_presence(
             activity=discord.Activity(
@@ -136,11 +191,12 @@ class Lyvego(commands.AutoShardedBot, Pool):
                 type=discord.ActivityType.watching
             )
         )
+        logger.info("Lyvego ready")
 
-    def _exiting(self):
+    def _exit(self):
         try:
             self._close()
-            logger.info("pool closed")
+            logger.info("Pool closed")
         except Exception as e:
             logger.exception(e, exc_info=True)
             sys.exit(1)
@@ -149,8 +205,10 @@ class Lyvego(commands.AutoShardedBot, Pool):
             sys.exit(0)
 
     def run(self, token, *args, **kwargs):
-        atexit.register(self._exiting)
-        super().run(token, *args, **kwargs)
+        try:
+            super().run(token, *args, **kwargs)
+        except KeyboardInterrupt:
+            self._exit()
 
 
 if __name__ == "__main__":

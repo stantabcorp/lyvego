@@ -19,24 +19,27 @@ class Help(commands.Cog):
     async def help(self, ctx: commands.Context):
         embed = discord.Embed(
             color=self.bot.color,
-            description=f"You can configure the bot on [lyvego.com]({self.bot.lyvego_url})\nRemove the <> when you are using a command.",
+            description=self.bot.locales["en"]["help_description_header"],
             timestamp=dctt()
         )
         embed.set_author(
-            name="Lyvego commands",
+            name=self.bot.locales["author_name_commands"],
             icon_url=ctx.me.avatar_url
         )
         embed.add_field(
             name="!streamer <streamer_name>",
-            value="Send notification when the streamer goes live. (Server only - Admin required)"
+            value=self.bot.locales["en"]["help_streamer"],
+            inline=False
         )
         embed.add_field(
             name="!follow <streamer_name>",
-            value="Send notification when someone follow this streamer. (Server only - Admin required)"
+            value=self.bot.locales["en"]["help_follow"],
+            inline=False
         )
         embed.add_field(
             name="!clip <streamer_name>",
-            value="Get the 5 most watch clips for the past last week. (Server only)"
+            value=self.bot.locales["en"]["help_clip"],
+            inline=False
         )
         embed.set_thumbnail(url=ctx.me.avatar_url)
         embed.set_footer(

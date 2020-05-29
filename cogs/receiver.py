@@ -4,18 +4,18 @@ import json
 import logging
 import os
 import time
-import pymysql
 from collections import namedtuple
 
 import discord
+import pymysql
 from aiohttp import web
 from discord.ext import commands
 
-from src.utils import API_KEY, dctt
+from src.constants import API_KEY
+from src.utils import dctt
 
 
 logger = logging.getLogger("lyvego")
-
 
 
 class Receiver(commands.Cog):
@@ -68,7 +68,8 @@ class Receiver(commands.Cog):
                         for message in messages:
                             try:
                                 print(tmp_msg)
-                                if message["on_change"] and msg.id not in tmp_msg:
+                                print(message)
+                                if message["on_change"] and message["message_id"] not in tmp_msg:
                                     channel = self.bot.get_channel(int(event.channel))
                                     msg = await channel.fetch_message(int(message["message_id"]))
                                     embed = self.on_live_embed(event.embed, channel.guild)
@@ -115,53 +116,48 @@ class Receiver(commands.Cog):
             logger.info(e, exc_info=True)
 
     async def _follow_event(self, events):
-        try:
-            for event in events:
-                try:
-                    channel = self.bot.get_channel(int(event.channel))
-                    embed = discord.Embed(
-                        timestamp=dctt(),
-                        color=self.bot.blue,
-                        description=event.message
-                    )
-                    embed.set_author(
-                        name="New follower",
-                        icon_url=event.details.avatar
-                    )
-                    embed.set_footer(
-                        text="New follow 💜"
-                    )
-                    await channel.send(embed=embed)
-                except:
-                    pass
-        except Exception as e:
-            logger.info(e, exc_info=True)
+        for event in events:
+            try:
+                channel = self.bot.get_channel(int(event.channel))
+                embed = discord.Embed(
+                    timestamp=dctt(),
+                    color=self.bot.blue,
+                    description=event.message
+                )
+                embed.set_author(
+                    name=f"{event.details.username}",
+                    icon_url=event.details.avatar
+                )
+                embed.set_footer(
+                    text="New follow 💜"
+                )
+                await channel.send(embed=embed)
+            except:
+                pass
+
 
     async def _ban_event(self, events):
-        try:
-            for event in events:
-                try:
-                    channel = self.bot.get_channel(int(event.channel))
-                    embed = discord.Embed(
-                        timestamp=dctt(),
-                        color=self.bot.red,
-                        description=event.message
-                    )
-                    embed.set_author(
-                        name=f"Ban announce for {event.details.username}",
-                        icon_url="https://cdn2.iconfinder.com/data/icons/superhero-neon-circle/64/1-superhero-512.png"
-                    )
-                    embed.set_thumbnail(
-                        url=event.details.avatar
-                    )
-                    embed.set_footer(
-                        text="Ban hammer 🔨"
-                    )
-                    await channel.send(embed=embed)
-                except Exception as e:
-                    logger.info(e, exc_info=True)
-        except Exception as e:
-            logger.info(e, exc_info=True)
+        for event in events:
+            try:
+                channel = self.bot.get_channel(int(event.channel))
+                embed = discord.Embed(
+                    timestamp=dctt(),
+                    color=self.bot.red,
+                    description=event.message
+                )
+                embed.set_author(
+                    name=f"Ban announce for {event.details.username}",
+                    icon_url="https://cdn2.iconfinder.com/data/icons/superhero-neon-circle/64/1-superhero-512.png"
+                )
+                embed.set_thumbnail(
+                    url=event.details.avatar
+                )
+                embed.set_footer(
+                    text="Ban hammer 🔨"
+                )
+                await channel.send(embed=embed)
+            except Exception as e:
+                logger.info(e, exc_info=True)
 
     async def handler(self, request):
         if request.headers["SuperApi"] == API_KEY:

@@ -4,8 +4,8 @@ import os
 from aiohttp import ClientSession
 from discord.ext import commands
 
-API_KEY       = os.environ["API_KEY"]
-AUTHORIZATION = os.environ["AUTHORIZATION"]
+from src.constants import AUTHORIZATION
+
 
 def dctt():
     """

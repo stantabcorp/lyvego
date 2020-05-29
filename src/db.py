@@ -56,6 +56,15 @@ class Pool:
                 await conn.commit()
                 await cur.close()
 
+    async def get_guilds_registered(self):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("SELECT discord_id FROM servers")
+                r = await cur.fetchall()
+                await cur.close()
+                return [x[0] for x in r]
+
+
     def _close(self):
         self.pool.close()
         self.pool.wait_closed()
