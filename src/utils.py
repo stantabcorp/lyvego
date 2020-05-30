@@ -1,5 +1,6 @@
 import datetime as dt
 import os
+import functools
 
 from aiohttp import ClientSession
 from discord.ext import commands

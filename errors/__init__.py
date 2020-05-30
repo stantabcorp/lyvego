@@ -4,3 +4,7 @@ class ClipsNotFound(Exception):
 
 class StreamerNotFound(Exception):
     pass
+
+
+class LanguageNotFound(Exception):
+    pass

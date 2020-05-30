@@ -4,8 +4,8 @@ import logging
 import discord
 from discord.ext import commands
 
+from errors import LanguageNotFound
 from src.utils import dctt
-
 
 logger = logging.getLogger("lyvego")
 
@@ -14,31 +14,42 @@ class Help(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name="help", aliases=["h"])
     @commands.cooldown(5, 30, commands.BucketType.user)
+    @commands.command(name="help", aliases=["h"])
     async def help(self, ctx: commands.Context):
+        lang = await self.bot.getg_lang(ctx.guild.id)
         embed = discord.Embed(
             color=self.bot.color,
-            description=self.bot.locales["en"]["help_description_header"],
+            description=self.bot.locales[lang]["help_description_header"],
             timestamp=dctt()
         )
         embed.set_author(
-            name=self.bot.locales["author_name_commands"],
+            name=self.bot.locales[lang]["author_name_commands"],
             icon_url=ctx.me.avatar_url
         )
         embed.add_field(
-            name="!streamer <streamer_name>",
-            value=self.bot.locales["en"]["help_streamer"],
+            name=f"{ctx.prefix}stream <streamer_name>",
+            value=self.bot.locales[lang]["help_streamer"],
             inline=False
         )
         embed.add_field(
-            name="!follow <streamer_name>",
-            value=self.bot.locales["en"]["help_follow"],
+            name=f"{ctx.prefix}follow <streamer_name>",
+            value=self.bot.locales[lang]["help_follow"],
             inline=False
         )
         embed.add_field(
-            name="!clip <streamer_name>",
-            value=self.bot.locales["en"]["help_clip"],
+            name=f"{ctx.prefix}clip <streamer_name>",
+            value=self.bot.locales[lang]["help_clip"],
+            inline=False
+        )
+        embed.add_field(
+            name=f"{ctx.prefix}setprefix <new_prefix>",
+            value=self.bot.locales[lang]["help_prefix"],
+            inline=False
+        )
+        embed.add_field(
+            name=f"{ctx.prefix}lang < --list | new_language>",
+            value=self.bot.locales[lang]["help_language"].format(", ".join([x.upper() for x in self.bot.locales]).rstrip(", ")),
             inline=False
         )
         embed.set_thumbnail(url=ctx.me.avatar_url)
@@ -51,6 +62,46 @@ class Help(commands.Cog):
         except:
             pass
         await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.cooldown(4, 30, commands.BucketType.user)
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    async def setprefix(self, ctx: commands.Context, prefix: str):
+        lang = await self.bot.getg_lang(ctx.guild.id)
+        try:
+            await self.bot.set_prefix(ctx.guild.id, prefix)
+            await ctx.send(self.bot.locales[lang]["newprefix_message"].format(ctx.author.mention, prefix))
+        except Exception as e:
+            logger.exception(e, exc_info=True)
+
+
+    @commands.command(aliases=["language"])
+    @commands.cooldown(4, 30, commands.BucketType.user)
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    async def lang(self, ctx, lang):
+        _lang = await self.bot.getg_lang(ctx.guild.id)
+        lang = lang.lower()
+        if lang == "--list":
+            list_lang = ""
+            for l in self.bot.locales.keys():
+                list_lang += f"- **{l.upper()}**\n"
+            return await ctx.send(self.bot.locales[_lang]["available_languages"].format(list_lang))
+        elif lang in self.bot.locales.keys():
+            try:
+                await self.bot.set_lang(ctx.guild.id, lang)
+                await ctx.send(self.bot.locales[lang]["new_language"].format(ctx.author.mention, lang.upper()))
+
+            except Exception as e:
+                logger.exception(e, exc_info=True)
+        else:
+            raise LanguageNotFound(self.bot.locales[_lang]["error_language_not_found"].format(ctx.author.mention, lang))
+        try:
+            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
+        except:
+            pass
+
 
 
     @commands.command(name="clean")

@@ -1,10 +1,15 @@
 {
     "description_configure_lyvego": "⚙️ You can fully configure the bot on [lyvego.com]({0})",
 
+    "webhook_has_voted": "**{0}** just voted for **Lyvego** OwO",
+    "help_prefix": "You can set up a custom prefix\n(Server only - Admin required)",
+    "help_language": "Available languages: {0}\nYou can list them with --list parameter instead of language.\n(Server only - Admin required)",
     "help_description_header": "You can configure the bot on [lyvego.com]({0})\nRemove the <> when you are using a command.",
     "help_streamer": "Send notification when the streamer goes live. (Server only - Admin required)",
     "help_follow": "Send notification when someone follow this streamer. (Server only - Admin required)",
     "help_clip": "Get the 5 most watch clips for the past last week. (Server only)",
+
+    "newprefix_message": "{0} New prefix : `{1}`",
 
     "author_name_success_added": "{0} successfully added",
     "author_name_most_viewed_clips": "{0} - Most viewed clips of the week",
@@ -16,6 +21,10 @@
     "message_started_following": "{follower} just started following {followed}.",
     "message_stream_live": "@everyone Hey {streamer} is live on {game} ! Go check him out",
 
+    "new_language": "{0} New language : `{1}`",
+    "available_languages": "Available languages :\n{0}",
+
+    "error_language_not_found": "{0} Sorry but `{1}` is not implemented yet or doesn't exist.",
     "error_streamer_not_found": "{0} This streamer doesn't exist, please retry with a valid one.",
     "error_clips_not_found": "{0} Sorry but there is no clips for this streamer."
 }

@@ -31,10 +31,11 @@ handler.setFormatter(logging.Formatter(
 logger.addHandler(handler)
 
 
+
 class Lyvego(commands.AutoShardedBot, Pool):
     def __init__(self, *args, loop=None, **kwargs):
         super().__init__(
-            command_prefix="!",
+            command_prefix=self._get_prefix,
             activity=discord.Game(
                 name="Starting..."
             ),
@@ -52,6 +53,11 @@ class Lyvego(commands.AutoShardedBot, Pool):
         self.lyvego_url = "https://lyvego.com"
         self.remove_command("help")
         self.loader()
+
+
+    async def _get_prefix(self, bot, message):
+        prefix = await self.getg_prefix(message.guild.id)
+        return when_mentioned_or(prefix)(bot, message)
 
     def loader(self, reloading: Optional[bool]=False):
         for file in os.listdir("cogs/"):
@@ -187,7 +193,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
 
         await self.change_presence(
             activity=discord.Activity(
-                name="!help | lyvego.com",
+                name="!!help | lyvego.com",
                 type=discord.ActivityType.watching
             )
         )

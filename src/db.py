@@ -1,7 +1,8 @@
 import os
 import asyncio
 import aiomysql
-
+import functools
+from discord.ext import commands
 
 class Pool:
     async def insert(self, channel_id, message_id, streamer_id, on_end, on_change):
@@ -63,6 +64,36 @@ class Pool:
                 r = await cur.fetchall()
                 await cur.close()
                 return [x[0] for x in r]
+
+    async def getg_prefix(self, id):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("SELECT prefix FROM servers WHERE discord_id=%s", (id, ))
+                prefix, = await cur.fetchone()
+                await cur.close()
+                return prefix
+
+    async def getg_lang(self, id):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("SELECT lang FROM servers WHERE discord_id=%s", (id, ))
+                lang, = await cur.fetchone()
+                await cur.close()
+                return lang
+
+    async def set_prefix(self, id, prefix):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("UPDATE servers SET prefix=%s WHERE discord_id=%s", (prefix, id, ))
+                await conn.commit()
+                await cur.close()
+
+    async def set_lang(self, id, lang):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("UPDATE servers SET lang=%s WHERE discord_id=%s", (lang, id, ))
+                await conn.commit()
+                await cur.close()
 
 
     def _close(self):

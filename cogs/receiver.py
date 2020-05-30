@@ -41,56 +41,64 @@ class Receiver(commands.Cog):
     def _json_object_hook(d: dict):
         return namedtuple('Events', d.keys())(*d.values())
 
+    async def _clips_event(self, events):
+        for event in events:
+            try:
+                channel = self.bot.get_channel(int(event.channel))
+            except:
+                continue
+            for clip in event.clips:
+                try:
+                    await channel.send(clip.link)
+                except:
+                    pass
+
+
     async def _stream_event(self, events):
-        try:
-            for event in events:
-                if event.status == "ended" and event.updates.on_end:
-                    messages = await self.bot.select_message(event.streamer)
+        for event in events:
+            if event.status == "ended" and event.updates.on_end:
+                messages = await self.bot.select_message(event.streamer)
+                for message in messages:
+                    try:
+                        if message["on_end"]:
+                            print(int(message["message_id"]))
+                            channel = self.bot.get_channel(int(event.channel))
+                            msg = await channel.fetch_message(int(message["message_id"]))
+                            await self.bot.clean(message["message_id"])
+                            await msg.delete()
+                            logger.info(f"{msg.id} deleted")
+                    except:
+                        pass
+            elif event.status == "changed":
+                messages = await self.bot.select_message(event.streamer)
+                checker = []
+                for c in messages:
+                    for v in c.values():
+                        checker.append(v)
+                if (event.streamer and event.channel) in checker:
+                    tmp_msg = []
                     for message in messages:
                         try:
-                            if message["on_end"]:
-                                print(int(message["message_id"]))
+                            if message["on_change"] and message["message_id"] not in tmp_msg:
                                 channel = self.bot.get_channel(int(event.channel))
                                 msg = await channel.fetch_message(int(message["message_id"]))
-                                await self.bot.clean(message["message_id"])
-                                await msg.delete()
-                                logger.info(f"{msg.id} deleted")
-                        except:
-                            pass
-                elif event.status == "changed":
-                    messages = await self.bot.select_message(event.streamer)
-                    checker = []
-                    for c in messages:
-                        for v in c.values():
-                            checker.append(v)
-                    if (event.streamer and event.channel) in checker:
-                        tmp_msg = []
-                        for message in messages:
-                            try:
-                                print(tmp_msg)
-                                print(message)
-                                if message["on_change"] and message["message_id"] not in tmp_msg:
-                                    channel = self.bot.get_channel(int(event.channel))
-                                    msg = await channel.fetch_message(int(message["message_id"]))
-                                    embed = self.on_live_embed(event.embed, channel.guild)
-                                    await msg.edit(embed=embed)
-                                    tmp_msg.append(msg.id)
-                                    logger.info(f"{msg.id} edited")
-                            except Exception as e:
-                                logger.exception(e, exc_info=True)
-                    else:
-                        channel = self.bot.get_channel(int(event.channel))
-                        embed = self.on_live_embed(event.embed, channel.guild)
-                        msg = await channel.send(
-                            embed=embed,
-                            content=event.message
-                        )
-                        if event.updates.on_end or event.updates.on_change:
-                            await self.bot.insert(
-                                event.channel, str(msg.id), event.streamer,
-                                event.updates.on_end, event.updates.on_change)
-        except Exception as e:
-            logger.exception(e, exc_info=True)
+                                embed = self.on_live_embed(event.embed, channel.guild)
+                                await msg.edit(embed=embed)
+                                tmp_msg.append(msg.id)
+                                logger.info(f"{msg.id} edited")
+                        except Exception as e:
+                            logger.exception(e, exc_info=True)
+                else:
+                    channel = self.bot.get_channel(int(event.channel))
+                    embed = self.on_live_embed(event.embed, channel.guild)
+                    msg = await channel.send(
+                        embed=embed,
+                        content=event.message
+                    )
+                    if event.updates.on_end or event.updates.on_change:
+                        await self.bot.insert(
+                            event.channel, str(msg.id), event.streamer,
+                            event.updates.on_end, event.updates.on_change)
 
     async def _moderator_event(self, events):
         try:
@@ -167,12 +175,14 @@ class Receiver(commands.Cog):
             print(event_type)
             if event_type == "stream":
                 await self._stream_event(events)
-            elif event_type == "moderator":
-                await self._moderator_event(events)
+            # elif event_type == "moderator":
+            #     await self._moderator_event(events)
             elif event_type == "follow":
                 await self._follow_event(events)
-            elif event_type == "ban":
-                await self._ban_event(events)
+            # elif event_type == "ban":
+            #     await self._ban_event(events)
+            elif event_type == "clip":
+                await self._clips_event(events)
 
             return web.Response()
 
@@ -180,11 +190,10 @@ class Receiver(commands.Cog):
         data = await request.json()
         user = self.bot.get_user(int(data['user']))
         channel = self.bot.get_channel(715158139242020915)
-        # await channel.send(f"{user} just voted for lyvego OwO")
+        await channel.send(self.bot.locales["en"]["webhook_has_voted"].format(user.name))
         is_accepted = await self.bot.get_topgg_user(user.id)
         if not is_accepted:
             return
-        logger.info("voted")
         embed = discord.Embed(
             title="TOP.GG upvote",
             description="Your vote has been register! Thank you ❤️\nYou can vote again in 12 hours on the same [link](https://top.gg/bot/702648685263323187/vote).\nIf you have any question come over our [discord server](https://discord.gg/E4nVPd2)\nYou can react below to disable notification on upvote.",
