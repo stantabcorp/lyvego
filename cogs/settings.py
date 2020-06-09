@@ -68,6 +68,46 @@ class Settings(commands.Cog):
         else:
             raise errors.StreamerNotFound(self.bot.locales[lang]["error_streamer_not_found"].format(ctx.author))
 
+
+    @commands.command(name="clips")
+    @commands.cooldown(4, 30, commands.BucketType.user)
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    async def add_clips(self, ctx: commands.Context, streamer: str):
+        lang = await self.bot.getg_lang(ctx.guild.id)
+        resp = await rh.post_streamer(
+            ctx,
+            self.bot.http_session,
+            json=[
+                {
+                "type": "clip_announcement",
+                "channel_id": ctx.channel.id,
+                "streamer": streamer
+                }
+            ]
+        )
+        if resp.status in range(200, 300):
+
+            embed = discord.Embed(
+                description=self.bot.locales[lang]["description_configure_lyvego"].format(self.bot.lyvego_url),
+                color=self.bot.color,
+                timestamp=dctt()
+            )
+            embed.set_author(
+                name=self.bot.locales[lang]["author_name_success_added"].format(streamer),
+                icon_url=ctx.author.avatar_url
+            )
+            embed.set_thumbnail(
+                url=ctx.me.avatar_url
+            )
+            try:
+                await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
+            except:
+                pass
+            await ctx.send(embed=embed)
+        else:
+            raise errors.StreamerNotFound(self.bot.locales[lang]["error_streamer_not_found"].format(ctx.author))
+
     @commands.command(name="stream")
     @commands.cooldown(4, 30, commands.BucketType.user)
     @commands.has_permissions(administrator=True)
@@ -111,11 +151,11 @@ class Settings(commands.Cog):
         else:
             raise errors.StreamerNotFound(self.bot.locales[lang]["error_streamer_not_found"].format(ctx.author))
 
-    @commands.command(aliases=["clips", "c"])
+    @commands.command(aliases=["topclips"])
     @commands.cooldown(4, 30, commands.BucketType.user)
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
-    async def clip(self, ctx: commands.Context, streamer: str):
+    async def topclip(self, ctx: commands.Context, streamer: str):
         lang = await self.bot.getg_lang(ctx.guild.id)
         try:
             clips = await rh.top_clips(self.bot.http_session, streamer)

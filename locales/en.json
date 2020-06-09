@@ -1,4 +1,7 @@
 {
+    "title_invite_lyvego": "Invite lyvego",
+    "description_invite_lyvego": "[Invite me]({0})",
+
     "description_configure_lyvego": "⚙️ You can fully configure the bot on [lyvego.com]({0})",
 
     "webhook_has_voted": "**{0}** just voted for **Lyvego** OwO",
@@ -8,12 +11,16 @@
     "help_streamer": "Send notification when the streamer goes live. (Server only - Admin required)",
     "help_follow": "Send notification when someone follow this streamer. (Server only - Admin required)",
     "help_clip": "Get the 5 most watch clips for the past last week. (Server only)",
-
+    "help_getprefix": "Views your current guild prefix.",
     "newprefix_message": "{0} New prefix : `{1}`",
 
     "author_name_success_added": "{0} successfully added",
     "author_name_most_viewed_clips": "{0} - Most viewed clips of the week",
     "author_name_commands": "Lyvego commands",
+
+    "paginated_author_twitch_commands": "Twitch commands",
+    "paginated_author_settings_commands": "Settings commands",
+
     "field_value_view_clip": "[View clip]({0})",
     "field_name_views": "Views",
     "field_value_clipper": "Clipper",
@@ -24,6 +31,8 @@
     "new_language": "{0} New language : `{1}`",
     "available_languages": "Available languages :\n{0}",
 
+    "error_ratelimited": "{0} This command is ratelimited, please try again in {1:.2f}s",
+    "error_missing_manages_permissions": "{0} If you want to be able to use all features you should give `Manage messages` permission to the bot.",
     "error_language_not_found": "{0} Sorry but `{1}` is not implemented yet or doesn't exist.",
     "error_streamer_not_found": "{0} This streamer doesn't exist, please retry with a valid one.",
     "error_clips_not_found": "{0} Sorry but there is no clips for this streamer."

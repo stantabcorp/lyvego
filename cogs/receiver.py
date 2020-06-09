@@ -23,7 +23,7 @@ class Receiver(commands.Cog):
         self.bot = bot
         self.bot.loop.create_task(self.run_server())
 
-    def on_live_embed(self, em: object, guild: discord.Guild):
+    def on_live_embed(self, em, guild: discord.Guild):
         embed = discord.Embed(
             description=f"<:rec:703677659535769710> [{em.stream.name}]({em.stream.streamer.link})",
             color=int(f"0x{em.color}", 16),
@@ -35,6 +35,7 @@ class Receiver(commands.Cog):
         embed.set_thumbnail(url=em.stream.game.icon)
         embed.set_author(name=em.stream.streamer.name, url=em.stream.streamer.link, icon_url=em.stream.streamer.avatar)
         embed.set_image(url=em.stream.thumbnail)
+        embed.set_footer(text="lyvego.com")
         return embed
 
     @staticmethod
@@ -49,10 +50,9 @@ class Receiver(commands.Cog):
                 continue
             for clip in event.clips:
                 try:
-                    await channel.send(clip.link)
+                    await channel.send(f"**{clip.title}**\n{clip.link}")
                 except:
                     pass
-
 
     async def _stream_event(self, events):
         for event in events:
@@ -84,6 +84,7 @@ class Receiver(commands.Cog):
                                 msg = await channel.fetch_message(int(message["message_id"]))
                                 embed = self.on_live_embed(event.embed, channel.guild)
                                 await msg.edit(embed=embed)
+                                await self.bot.update_messages(self, message["streamer_id"])
                                 tmp_msg.append(msg.id)
                                 logger.info(f"{msg.id} edited")
                         except Exception as e:
@@ -95,10 +96,9 @@ class Receiver(commands.Cog):
                         embed=embed,
                         content=event.message
                     )
-                    if event.updates.on_end or event.updates.on_change:
-                        await self.bot.insert(
-                            event.channel, str(msg.id), event.streamer,
-                            event.updates.on_end, event.updates.on_change)
+                    await self.bot.insert(
+                        event.channel, str(msg.id), event.streamer,
+                        event.updates.on_end, event.updates.on_change)
 
     async def _moderator_event(self, events):
         try:

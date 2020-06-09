@@ -13,7 +13,7 @@ from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import when_mentioned_or
 
-from src.constants import HOST, PASSWORD, PORT, USER
+from src.constants import HOST, PASSWORD, PORT, TOKEN, USER
 from src.db import Pool
 from src.utils import AUTHORIZATION
 
@@ -54,7 +54,6 @@ class Lyvego(commands.AutoShardedBot, Pool):
         self.remove_command("help")
         self.loader()
 
-
     async def _get_prefix(self, bot, message):
         prefix = await self.getg_prefix(message.guild.id)
         return when_mentioned_or(prefix)(bot, message)
@@ -70,8 +69,6 @@ class Lyvego(commands.AutoShardedBot, Pool):
                     logger.info(f"{file} loaded")
             except Exception:
                 logger.exception(f"Fail to load {file}")
-
-
 
     async def on_guild_join(self, guild: discord.Guild):
         try:
@@ -101,12 +98,15 @@ class Lyvego(commands.AutoShardedBot, Pool):
             logger.exception(e, exc_info=True)
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        if str(ctx.command) in ("help"):
+            return
         if isinstance(error, commands.CommandOnCooldown):
             try:
                 await ctx.message.add_reaction("<a:loading:709745917343039530>")
             except:
                 pass
-            await ctx.send('{} This command is ratelimited, please try again in {:.2f}s'.format(ctx.author.mention, error.retry_after))
+            lang = await self.getg_lang(ctx.guild.id)
+            await ctx.send(self.bot.locales[lang]["error_ratelimited"].format(ctx.author.mention, error.retry_after))
         else:
             try:
                 await ctx.message.add_reaction("<a:wrong_checkmark:709737435889664112>")
@@ -181,7 +181,8 @@ class Lyvego(commands.AutoShardedBot, Pool):
                             password=PASSWORD,
                             db=USER,
                             loop=self.loop,
-                            maxsize=20
+                            maxsize=20,
+                            autocommit=True
                         )
                     await self._verify_servers()
                     logger.info("Guilds verified")
@@ -219,4 +220,4 @@ class Lyvego(commands.AutoShardedBot, Pool):
 
 if __name__ == "__main__":
     bot = Lyvego()
-    bot.run(os.environ["TOKEN"], reconnect=True)
+    bot.run(TOKEN, reconnect=True)
