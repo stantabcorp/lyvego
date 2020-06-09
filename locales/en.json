@@ -10,7 +10,8 @@
     "help_description_header": "You can configure the bot on [lyvego.com]({0})\nRemove the <> when you are using a command.",
     "help_streamer": "Send notification when the streamer goes live. (Server only - Admin required)",
     "help_follow": "Send notification when someone follow this streamer. (Server only - Admin required)",
-    "help_clip": "Get the 5 most watch clips for the past last week. (Server only)",
+    "help_clips": "Send notification when someone create a clips for this streamer (Server only - Admin required)",
+    "help_topclip": "Get the 5 most watch clips for the past last week. (Server only)",
     "help_getprefix": "Views your current guild prefix.",
     "newprefix_message": "{0} New prefix : `{1}`",
 

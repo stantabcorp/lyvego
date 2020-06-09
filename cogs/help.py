@@ -104,9 +104,16 @@ class Help(commands.Cog):
                     value=self.bot.locales[lang]["help_follow"],
                     inline=False
                 )
+
                 embed.add_field(
-                    name=f"{ctx.prefix}clip <streamer_name>",
-                    value=self.bot.locales[lang]["help_clip"],
+                    name=f"{ctx.prefix}clips <streamer_name>",
+                    value=self.bot.locales[lang]["help_clips"],
+                    inline=False
+                )
+
+                embed.add_field(
+                    name=f"{ctx.prefix}topclip <streamer_name>",
+                    value=self.bot.locales[lang]["help_topclip"],
                     inline=False
                 )
 
