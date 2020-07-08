@@ -21,10 +21,6 @@ class Help(commands.Cog):
     @commands.command(name="help", aliases=["h"])
     @commands.bot_has_permissions(manage_messages=True)
     async def help(self, ctx: commands.Context):
-        try:
-            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
-        except:
-            pass
         lang = await self.bot.getg_lang(ctx.guild.id)
         react_list = ["<:lyvego:703585626053673060>", "<:twitch:703585214261231626>", "⚙️"]
         embed = discord.Embed(
@@ -155,6 +151,21 @@ class Help(commands.Cog):
                     value=self.bot.locales[lang]["help_dashboard"],
                     inline=False
                 )
+                embed.add_field(
+                    name=f"{ctx.prefix}ping",
+                    value=self.bot.locales[lang]["help_ping"],
+                    inline=False
+                )
+                embed.add_field(
+                    name=f"{ctx.prefix}vote",
+                    value=self.bot.locales[lang]["help_vote"],
+                    inline=False
+                )
+                embed.add_field(
+                    name=f"{ctx.prefix}about",
+                    value=self.bot.locales[lang]["help_about"],
+                    inline=False
+                )
 
             embed.set_footer(
                 text="lyvego.com",
@@ -194,7 +205,7 @@ class Help(commands.Cog):
             inline=False
         )
         embed.add_field(
-            name=f"<:twitch:703585214261231626> {ctx.prefix}topclips <streamer_name> [amount]",
+            name=f"<:twitch:703585214261231626> {ctx.prefix}topclip <streamer_name> [amount]",
             value=self.bot.locales[lang]["help_topclip"],
             inline=False
         )
@@ -223,6 +234,21 @@ class Help(commands.Cog):
             value=self.bot.locales[lang]["help_dashboard"],
             inline=False
         )
+        embed.add_field(
+            name=f"🤖 {ctx.prefix}ping",
+            value=self.bot.locales[lang]["help_ping"],
+            inline=False
+        )
+        embed.add_field(
+            name=f"🤖 {ctx.prefix}vote",
+            value=self.bot.locales[lang]["help_vote"],
+            inline=False
+        )
+        embed.add_field(
+            name=f"🤖 {ctx.prefix}about",
+            value=self.bot.locales[lang]["help_about"],
+            inline=False
+        )
         embed.set_thumbnail(url=ctx.me.avatar_url)
         embed.set_footer(
             text="lyvego.com",
@@ -233,6 +259,73 @@ class Help(commands.Cog):
         except:
             pass
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def ping(self, ctx):
+        embed = discord.Embed(
+            timestamp=dctt(),
+            color=self.bot.color,
+            title="Bot latency"
+        )
+        embed.add_field(
+            name="💗 Hearthbeat",
+            value=f"`{self.bot.latencies[ctx.guild.shard_id][1]:.3f}` ms"
+        )
+        embed.set_footer(
+            text="lyvego.com"
+        )
+        await ctx.send(embed=embed)
+        try:
+            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
+        except:
+            pass
+
+    @commands.command()
+    async def vote(self, ctx):
+        await ctx.send("https://top.gg/bot/698945792232390697")
+        try:
+            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
+        except:
+            pass
+
+    @commands.command()
+    async def about(self, ctx):
+        lang = await self.bot.getg_lang(str(ctx.guild.id))
+        embed = discord.Embed(
+            timestamp=dctt(),
+            color=self.bot.color,
+            description=self.bot.locales[lang]["about_description"]
+        )
+        nb_users = 0
+        channels = 0
+        for s in self.bot.guilds:
+            nb_users += len(s.members)
+            channels += len(s.channels)
+        embed.add_field(
+            name="Dashboard",
+            value="[lyvego.com](https://lyvego.com/)"
+        )
+        embed.add_field(
+            name="<:servers:693053697453850655> Servers",
+            value=len(self.bot.guilds))
+        embed.add_field(
+            name="<:users:693053423494365214> Members",
+            value=nb_users)
+        embed.add_field(
+            name="<:hashtag:693056105076621342> Channels",
+            value=channels)
+        embed.add_field(
+            name="<:stack:693054261512110091> Shards",
+            value=f"{ctx.guild.shard_id + 1}/{self.bot.shard_count}")
+        embed.add_field(
+            name="💗 Hearthbeat shards avg",
+            value=f"`{sum([x[1] for x in self.bot.latencies]) / self.bot.shard_count:.3f}` ms"
+        )
+        await ctx.send(embed=embed)
+        try:
+            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
+        except:
+            pass
 
     @commands.command()
     async def invite(self, ctx: commands.Context):
@@ -248,6 +341,10 @@ class Help(commands.Cog):
             icon_url=ctx.me.avatar_url
         )
         await ctx.send(embed=embed)
+        try:
+            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
+        except:
+            pass
 
     @commands.command()
     async def dashboard(self, ctx: commands.Context):
@@ -262,6 +359,10 @@ class Help(commands.Cog):
             icon_url=ctx.me.avatar_url
         )
         await ctx.send(embed=embed)
+        try:
+            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
+        except:
+            pass
 
     @commands.command()
     @commands.cooldown(4, 30, commands.BucketType.user)
@@ -269,6 +370,10 @@ class Help(commands.Cog):
     async def getprefix(self, ctx: commands.Context):
         prefix = await self.bot.getg_prefix(ctx.guild.id)
         await ctx.send(f"`{prefix}`")
+        try:
+            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
+        except:
+            pass
 
     @commands.command()
     @commands.cooldown(4, 30, commands.BucketType.user)
