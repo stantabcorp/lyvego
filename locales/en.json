@@ -4,14 +4,18 @@
 
     "description_configure_lyvego": "⚙️ You can fully configure the bot on [lyvego.com]({0})",
 
-    "webhook_has_voted": "**{0}** just voted for **Lyvego** OwO",
+    "help_hub_twitch": "{0} Views commands related to stream",
+    "help_hub_settings": "{0} Views commands related to settings",
+    "help_hub_tap_to_see": "Tap {0} to see them !",
     "help_prefix": "You can set up a custom prefix\n(Server only - Admin required)",
+    "help_dashboard": "Link to lyvego dashboard.",
+    "help_invite": "Send bot link invitation.",
     "help_language": "Available languages: {0}\nYou can list them with --list parameter instead of language.\n(Server only - Admin required)",
-    "help_description_header": "You can configure the bot on [lyvego.com]({0})\nRemove the <> when you are using a command.",
+    "help_description_header": "Our [discord](https://discord.gg/E4nVPd2).\nYou can configure the bot on [lyvego.com]({0})\nRemove the <> or [] when you are using a command.\n<arg> mean that arg is required\n[arg] mean that arg is optional\n arg1 | arg2 mean arg1 OR arg2.",
     "help_streamer": "Send notification when the streamer goes live. (Server only - Admin required)",
     "help_follow": "Send notification when someone follow this streamer. (Server only - Admin required)",
     "help_clips": "Send notification when someone create a clips for this streamer (Server only - Admin required)",
-    "help_topclip": "Get the 5 most watch clips for the past last week. (Server only)",
+    "help_topclip": "Get the most watch clips for the past last week. Default amount is 5. (Server only)",
     "help_getprefix": "Views your current guild prefix.",
     "newprefix_message": "{0} New prefix : `{1}`",
 
@@ -32,6 +36,7 @@
     "new_language": "{0} New language : `{1}`",
     "available_languages": "Available languages :\n{0}",
 
+    "error_amount_topclips": "Max amount for topclips is 100 !",
     "error_ratelimited": "{0} This command is ratelimited, please try again in {1:.2f}s",
     "error_missing_manages_permissions": "{0} If you want to be able to use all features you should give `Manage messages` permission to the bot.",
     "error_language_not_found": "{0} Sorry but `{1}` is not implemented yet or doesn't exist.",

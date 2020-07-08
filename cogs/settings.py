@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 
 import discord
 from discord.ext import commands
@@ -151,21 +152,66 @@ class Settings(commands.Cog):
         else:
             raise errors.StreamerNotFound(self.bot.locales[lang]["error_streamer_not_found"].format(ctx.author))
 
+    def __next(self, embed, clips, start, end, lang):
+        medals = {
+            1: "🥇",
+            2: "🥈",
+            3: "🥉"
+        }
+        embed.clear_fields()
+        acc = 0
+        for i in range(start, end):
+
+            if acc * 3 >= 25:
+                break
+            try:
+                if (i + 1) < 4:
+                    embed.add_field(
+                        name=f"{medals[i+1]} {clips[i]['title']}",
+                        value=self.bot.locales[lang]["field_value_view_clip"].format(clips[i]['link'])
+                    )
+                else:
+                    embed.add_field(
+                        name=f"{clips[i]['title']}",
+                        value=self.bot.locales[lang]["field_value_view_clip"].format(clips[i]['link'])
+                    )
+                embed.add_field(
+                    name=self.bot.locales[lang]["field_name_views"],
+                    value=clips[i]["views"]
+                )
+                embed.add_field(
+                    name=self.bot.locales[lang]["field_value_clipper"],
+                    value=clips[i]["creator"]
+                )
+                embed.set_footer(
+                    text=f"lyvego.com | Pages {end//8}/{math.ceil(len(clips)/8)}"
+                )
+                acc += 1
+
+            except:
+                break
+
     @commands.command(aliases=["topclips"])
     @commands.cooldown(4, 30, commands.BucketType.user)
-    @commands.has_permissions(administrator=True)
     @commands.guild_only()
-    async def topclip(self, ctx: commands.Context, streamer: str):
+    async def topclip(self, ctx: commands.Context, streamer: str, amount=5):
         lang = await self.bot.getg_lang(ctx.guild.id)
+        if amount > 100:
+            raise Exception(self.bot.locales[lang]["error_amount_topclips"])
         try:
-            clips = await rh.top_clips(self.bot.http_session, streamer)
+            clips = await rh.top_clips(self.bot.http_session, streamer, parameters=f"&amount={amount}")
             if clips == None:
                 raise errors.StreamerNotFound(self.bot.locales[lang]["error_streamer_not_found"].format(ctx.author))
             clips = clips["clips"]
             if clips[0]:
                 pass
-        except KeyError:
+            try:
+                await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
+            except:
+                pass
+        except (IndexError, KeyError):
             raise errors.ClipsNotFound(self.bot.locales[lang]["error_clips_not_found"].format(ctx.author))
+
         embed = discord.Embed(
             timestamp=dctt(),
             color=self.bot.color
@@ -175,34 +221,63 @@ class Settings(commands.Cog):
             url=f"https://twitch.tv/{clips[0]['streamer']['name']}",
             icon_url=clips[0]["streamer"]["avatar"]
         )
-        medals = {
-            1: "🥇",
-            2: "🥈",
-            3: "🥉",
-            4: "",
-            5: ""
-        }
+
+
         embed.set_thumbnail(
             url=clips[0]["thumbnail"]
         )
-        for i, clip in enumerate(clips, start=1):
-            embed.add_field(
-                name=f"{medals[i]} {clip['title']}",
-                value=self.bot.locales[lang]["field_value_view_clip"].format(clip['link'])
-            )
-            embed.add_field(
-                name=self.bot.locales[lang]["field_name_views"],
-                value=clip["views"]
-            )
-            embed.add_field(
-                name=self.bot.locales[lang]["field_value_clipper"],
-                value=clip["creator"]
-            )
-        try:
-            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
-        except:
-            pass
-        await ctx.send(embed=embed)
+        start = 0
+        end = 8
+        self.__next(embed, clips, start, end, lang)
+
+        if len(clips) * 3 <= 25:
+            return await ctx.send(embed=embed)
+        embed.set_footer(
+            text=f"lyvego.com | Pages {end//8}/{math.ceil(len(clips)/8)}"
+        )
+
+        pages = await ctx.send(embed=embed)
+        react_list = ["◀️", "▶️"]
+        for reaction in react_list:
+            await pages.add_reaction(reaction)
+
+        def predicate(reaction, user):
+            return ctx.message.author == user and str(reaction.emoji) in react_list
+
+        start += 8
+        end += 8
+        while True:
+            try:
+                reaction, user = await self.bot.wait_for('reaction_add', check=predicate, timeout=120.0)
+            except asyncio.TimeoutError:
+                try:
+                    await ctx.message.delete()
+                except:
+                    pass
+                await pages.delete()
+                return
+
+            if react_list[0] == str(reaction.emoji):
+                self.__next(embed, clips, start, end, lang)
+
+                start -= 8
+                end -= 8
+                if start < 0:
+                    end = len(clips)
+                    start = end - 8
+
+            if react_list[1] == str(reaction.emoji):
+                self.__next(embed, clips, start, end, lang)
+                start += 8
+                end += 8
+                if end > len(clips):
+                    start = 0
+                    end = 8
+
+            await pages.remove_reaction(reaction.emoji, user)
+            await pages.edit(embed=embed)
+
+
 
     @commands.command(name="get")
     async def get_streamer(self, ctx):

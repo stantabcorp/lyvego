@@ -34,7 +34,7 @@ class Receiver(commands.Cog):
         embed.add_field(name="Game", value=em.stream.game.name)
         embed.set_thumbnail(url=em.stream.game.icon)
         embed.set_author(name=em.stream.streamer.name, url=em.stream.streamer.link, icon_url=em.stream.streamer.avatar)
-        embed.set_image(url=em.stream.thumbnail)
+        embed.set_image(url=em.stream.thumbnail + f"?{time.time()}")
         embed.set_footer(text="lyvego.com")
         return embed
 
@@ -61,12 +61,13 @@ class Receiver(commands.Cog):
                 for message in messages:
                     try:
                         if message["on_end"]:
-                            print(int(message["message_id"]))
                             channel = self.bot.get_channel(int(event.channel))
                             msg = await channel.fetch_message(int(message["message_id"]))
                             await self.bot.clean(message["message_id"])
                             await msg.delete()
                             logger.info(f"{msg.id} deleted")
+                        else:
+                            await self.bot.clean(message["message_id"])
                     except:
                         pass
             elif event.status == "changed":
@@ -84,7 +85,7 @@ class Receiver(commands.Cog):
                                 msg = await channel.fetch_message(int(message["message_id"]))
                                 embed = self.on_live_embed(event.embed, channel.guild)
                                 await msg.edit(embed=embed)
-                                await self.bot.update_messages(self, message["streamer_id"])
+                                await self.bot.update_messages(message["streamer_id"])
                                 tmp_msg.append(msg.id)
                                 logger.info(f"{msg.id} edited")
                         except Exception as e:
@@ -147,6 +148,7 @@ class Receiver(commands.Cog):
     async def _ban_event(self, events):
         for event in events:
             try:
+
                 channel = self.bot.get_channel(int(event.channel))
                 embed = discord.Embed(
                     timestamp=dctt(),
@@ -172,7 +174,7 @@ class Receiver(commands.Cog):
             data = await request.text()
             events = json.loads(data, object_hook=self._json_object_hook)
             event_type = events[0].type
-            print(event_type)
+            # print(event_type)
             if event_type == "stream":
                 await self._stream_event(events)
             # elif event_type == "moderator":
@@ -188,9 +190,10 @@ class Receiver(commands.Cog):
 
     async def webhook_handler(self, request):
         data = await request.json()
+        resp = web.Response()
         user = self.bot.get_user(int(data['user']))
         channel = self.bot.get_channel(715158139242020915)
-        await channel.send(self.bot.locales["en"]["webhook_has_voted"].format(user.name))
+        await channel.send("**{0}** just voted for **Lyvego** OwO".format(user.name))
         is_accepted = await self.bot.get_topgg_user(user.id)
         if not is_accepted:
             return
@@ -208,14 +211,14 @@ class Receiver(commands.Cog):
         dm_notif = await user.send(embed=embed)
 
 
-        resp = web.Response()
+
         try:
             await self.bot.insert_topgg(str(user.id), str(user.name))
         except pymysql.err.IntegrityError: # already in the db
             pass
 
-        if user.id == 162200556234866688:
-            bot_reaction = await dm_notif.add_reaction("<a:wrong_checkmark:709737435889664112>")
+        # if user.id == 162200556234866688:
+        bot_reaction = await dm_notif.add_reaction("<a:wrong_checkmark:709737435889664112>")
 
         def check(reaction, user_react):
             return user == user_react and "<a:wrong_checkmark:709737435889664112>" == str(reaction.emoji)
@@ -225,7 +228,8 @@ class Receiver(commands.Cog):
 
                 reaction, user_react = await self.bot.wait_for('reaction_add', check=check, timeout=360.0)
             except asyncio.TimeoutError:
-                return await dm_notif.delete()
+                return
+                # return await dm_notif.delete()
 
             if "<a:wrong_checkmark:709737435889664112>" == str(reaction.emoji):
                 try:
@@ -248,12 +252,12 @@ class Receiver(commands.Cog):
     async def run_server(self):
         await self.bot.wait_until_ready()
         app = web.Application()
-        app.router.add_post("/", self.handler)
+        app.router.add_post("/lyvego", self.handler)
         app.router.add_post("/webhook", self.webhook_handler)
         app.router.add_get("/get", self.test)
         runner = web.AppRunner(app)
         await runner.setup()
-        site = web.TCPSite(runner, '', 8080)
+        site = web.TCPSite(runner, '', 9886)
         await site.start()
         print("Server running")
 

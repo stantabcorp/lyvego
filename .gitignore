@@ -6,7 +6,7 @@ run.sh
 *.png
 test.py
 *.exe
-
+*.txt
 # C extensions
 *.so
 

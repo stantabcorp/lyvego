@@ -37,14 +37,18 @@ class Help(commands.Cog):
             icon_url=ctx.me.avatar_url
         )
         embed.add_field(
-            name=f"{react_list[1]} Views commands related to stream",
-            value=f"Tap {react_list[1]} to see them !",
+            name=self.bot.locales[lang]["help_hub_twitch"].format(react_list[1]),
+            value=self.bot.locales[lang]["help_hub_tap_to_see"].format(react_list[1]),
             inline=False
         )
         embed.add_field(
-            name=f"{react_list[2]} Views commands related to bot settings",
-            value=f"Tap {react_list[2]} to see them !",
+            name=self.bot.locales[lang]["help_hub_twitch"].format(react_list[2]),
+            value=self.bot.locales[lang]["help_hub_tap_to_see"].format(react_list[2]),
             inline=False
+        )
+        embed.set_footer(
+            text="lyvego.com | help pages deleted in 5 mins",
+            icon_url=ctx.me.avatar_url
         )
         pages = await ctx.send(embed=embed)
 
@@ -52,7 +56,7 @@ class Help(commands.Cog):
             await pages.add_reaction(reaction)
 
         def predicate(reaction, user):
-            return user == ctx.message.author and str(reaction.emoji) in react_list
+            return user == ctx.message.author  and str(reaction.emoji) in react_list
 
         while True:
             try:
@@ -76,13 +80,13 @@ class Help(commands.Cog):
                     icon_url=ctx.me.avatar_url
                 )
                 embed.add_field(
-                    name=f"{react_list[1]} Views commands related to stream",
-                    value=f"Tap {react_list[1]} to see them !",
+                    name=self.bot.locales[lang]["help_hub_twitch"].format(react_list[1]),
+                    value=self.bot.locales[lang]["help_hub_tap_to_see"].format(react_list[1]),
                     inline=False
                 )
                 embed.add_field(
-                    name=f"{react_list[2]} Views commands related to bot settings",
-                    value=f"Tap {react_list[2]} to see them !",
+                    name=self.bot.locales[lang]["help_hub_twitch"].format(react_list[2]),
+                    value=self.bot.locales[lang]["help_hub_tap_to_see"].format(react_list[2]),
                     inline=False
                 )
             elif react_list[1] == str(reaction.emoji):
@@ -112,7 +116,7 @@ class Help(commands.Cog):
                 )
 
                 embed.add_field(
-                    name=f"{ctx.prefix}topclip <streamer_name>",
+                    name=f"{ctx.prefix}topclip <streamer_name> [amount]",
                     value=self.bot.locales[lang]["help_topclip"],
                     inline=False
                 )
@@ -137,11 +141,20 @@ class Help(commands.Cog):
                     inline=False
                 )
                 embed.add_field(
-                    name=f"{ctx.prefix}lang < --list | new_language>",
+                    name=f"{ctx.prefix}lang <--list | new_language>",
                     value=self.bot.locales[lang]["help_language"].format(", ".join([x.upper() for x in self.bot.locales]).rstrip(", ")),
                     inline=False
                 )
-
+                embed.add_field(
+                    name=f"{ctx.prefix}invite",
+                    value=self.bot.locales[lang]["help_invite"],
+                    inline=False
+                )
+                embed.add_field(
+                    name=f"{ctx.prefix}dashboard",
+                    value=self.bot.locales[lang]["help_dashboard"],
+                    inline=False
+                )
 
             embed.set_footer(
                 text="lyvego.com",
@@ -150,16 +163,15 @@ class Help(commands.Cog):
             await pages.remove_reaction(reaction.emoji, user)
             await pages.edit(embed=embed)
 
-
     @help.error
     async def help_error(self, ctx: commands.Context, error):
         lang = await self.bot.getg_lang(ctx.guild.id)
-        if isinstance(error, commands.MissingPermissions):
-            await ctx.send(self.bot.locales[lang]["error_missing_manages_permissions"].format(ctx.author.mention))
+        # if isinstance(error, commands.MissingPermissions):
+        #     await ctx.send(self.bot.locales[lang]["error_missing_manages_permissions"].format(ctx.author.mention))
 
         embed = discord.Embed(
             color=self.bot.color,
-            description=self.bot.locales[lang]["help_description_header"],
+            description=self.bot.locales[lang]["help_description_header"].format(self.bot.lyvego_url),
             timestamp=dctt()
         )
         embed.set_author(
@@ -167,33 +179,48 @@ class Help(commands.Cog):
             icon_url=ctx.me.avatar_url
         )
         embed.add_field(
-            name=f"{ctx.prefix}stream <streamer_name>",
+            name=f"<:twitch:703585214261231626> {ctx.prefix}stream <streamer_name>",
             value=self.bot.locales[lang]["help_streamer"],
             inline=False
         )
         embed.add_field(
-            name=f"{ctx.prefix}follow <streamer_name>",
+            name=f"<:twitch:703585214261231626> {ctx.prefix}follow <streamer_name>",
             value=self.bot.locales[lang]["help_follow"],
             inline=False
         )
         embed.add_field(
-            name=f"{ctx.prefix}clip <streamer_name>",
-            value=self.bot.locales[lang]["help_clip"],
+            name=f"<:twitch:703585214261231626> {ctx.prefix}clips <streamer_name>",
+            value=self.bot.locales[lang]["help_clips"],
             inline=False
         )
         embed.add_field(
-            name=f"{ctx.prefix}setprefix <new_prefix>",
+            name=f"<:twitch:703585214261231626> {ctx.prefix}topclips <streamer_name> [amount]",
+            value=self.bot.locales[lang]["help_topclip"],
+            inline=False
+        )
+        embed.add_field(
+            name=f"⚙️ {ctx.prefix}setprefix <new_prefix>",
             value=self.bot.locales[lang]["help_prefix"],
             inline=False
         )
         embed.add_field(
-            name=f"{ctx.prefix}lang < --list | new_language>",
+            name=f"⚙️ {ctx.prefix}lang <--list | new_language>",
             value=self.bot.locales[lang]["help_language"].format(", ".join([x.upper() for x in self.bot.locales]).rstrip(", ")),
             inline=False
         )
         embed.add_field(
-            name="@Stream Alerts (Lyvego) getprefix",
+            name="⚙️ @Stream Alerts (Lyvego) getprefix",
             value=self.bot.locales[lang]["help_getprefix"],
+            inline=False
+        )
+        embed.add_field(
+            name=f"⚙️ {ctx.prefix}invite",
+            value=self.bot.locales[lang]["help_invite"],
+            inline=False
+        )
+        embed.add_field(
+            name=f"⚙️ {ctx.prefix}dashboard",
+            value=self.bot.locales[lang]["help_dashboard"],
             inline=False
         )
         embed.set_thumbnail(url=ctx.me.avatar_url)
@@ -241,7 +268,7 @@ class Help(commands.Cog):
     @commands.guild_only()
     async def getprefix(self, ctx: commands.Context):
         prefix = await self.bot.getg_prefix(ctx.guild.id)
-        await ctx.send(f"Guild prefix for **{ctx.guild.name}** : `{prefix}`")
+        await ctx.send(f"`{prefix}`")
 
     @commands.command()
     @commands.cooldown(4, 30, commands.BucketType.user)
@@ -280,7 +307,6 @@ class Help(commands.Cog):
             await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
         except:
             pass
-
 
 def setup(bot):
     bot.add_cog(Help(bot))
