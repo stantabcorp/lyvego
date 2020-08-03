@@ -13,6 +13,7 @@ logger = logging.getLogger("lyvego")
 
 
 class Settings(commands.Cog):
+    __slots__ = ("bot")
     def __init__(self, bot):
         self.bot = bot
 
@@ -80,7 +81,7 @@ class Settings(commands.Cog):
         deleted = await ctx.channel.purge(check=is_me)
         await ctx.message.delete()
 
-    @commands.command(name="clips")
+    @commands.command(name="clips", aliases=["clip"])
     @commands.cooldown(4, 30, commands.BucketType.user)
     @commands.has_permissions(administrator=True)
     @commands.guild_only()

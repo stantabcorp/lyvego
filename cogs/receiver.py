@@ -19,6 +19,7 @@ logger = logging.getLogger("lyvego")
 
 
 class Receiver(commands.Cog):
+    __slots__ = ("bot")
     def __init__(self, bot):
         self.bot = bot
         self.bot.loop.create_task(self.run_server())
@@ -194,13 +195,17 @@ class Receiver(commands.Cog):
         user = self.bot.get_user(int(data['user']))
         channel = self.bot.get_channel(715158139242020915)
         await channel.send("**{0}** just voted for **Lyvego** OwO".format(user.name))
+        try:
+            await self.bot.insert_topgg(str(user.id), str(user.name))
+        except: # already in the db
+            pass
         is_accepted = await self.bot.get_topgg_user(user.id)
         if not is_accepted:
             return
         embed = discord.Embed(
             title="TOP.GG upvote",
-            description="Your vote has been register! Thank you ❤️\nYou can vote again in 12 hours on the same [link](https://top.gg/bot/702648685263323187/vote).\nIf you have any question come over our [discord server](https://discord.gg/E4nVPd2)\nYou can react below to disable notification on upvote.",
-            timestamp=dt.datetime.utcnow(),
+            description="Your vote has been registered ! Thank you ❤️\nYou can vote again in 12 hours on the same [link](https://top.gg/bot/702648685263323187/vote).\nIf you have any question come over our [discord server](https://discord.gg/E4nVPd2)\nYou can react below to disable notification on upvote.",
+            timestamp=dctt(),
             color=self.bot.blue
         )
         embed.set_thumbnail(url="https://top.gg/images/dblnew.png")
@@ -210,14 +215,6 @@ class Receiver(commands.Cog):
         )
         dm_notif = await user.send(embed=embed)
 
-
-
-        try:
-            await self.bot.insert_topgg(str(user.id), str(user.name))
-        except pymysql.err.IntegrityError: # already in the db
-            pass
-
-        # if user.id == 162200556234866688:
         bot_reaction = await dm_notif.add_reaction("<a:wrong_checkmark:709737435889664112>")
 
         def check(reaction, user_react):
@@ -226,7 +223,7 @@ class Receiver(commands.Cog):
         while 1:
             try:
 
-                reaction, user_react = await self.bot.wait_for('reaction_add', check=check, timeout=360.0)
+                reaction, user_react = await self.bot.wait_for('reaction_add', check=check, timeout=120.0)
             except asyncio.TimeoutError:
                 return
                 # return await dm_notif.delete()
@@ -246,15 +243,15 @@ class Receiver(commands.Cog):
 
         # await channel.send(data)
 
-    async def test(self, request):
-        return web.Response(text="yeee")
+    # async def test(self, request):
+    #     return web.Response(text="yeee")
 
     async def run_server(self):
         await self.bot.wait_until_ready()
         app = web.Application()
         app.router.add_post("/lyvego", self.handler)
         app.router.add_post("/webhook", self.webhook_handler)
-        app.router.add_get("/get", self.test)
+        # app.router.add_get("/get", self.test)
         runner = web.AppRunner(app)
         await runner.setup()
         site = web.TCPSite(runner, '', 9886)

@@ -1,5 +1,4 @@
 import asyncio
-import atexit
 import json
 import logging
 import os
@@ -33,6 +32,17 @@ logger.addHandler(handler)
 
 
 class Lyvego(commands.AutoShardedBot, Pool):
+    __slots__ = (
+        "http_session",
+        "pool",
+        "red",
+        "green",
+        "blue",
+        "color",
+        "color_str",
+        "locales",
+        "lyvego_url"
+    )
     def __init__(self, *args, loop=None, **kwargs):
         super().__init__(
             command_prefix=self._get_prefix,
@@ -189,7 +199,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
     async def on_ready(self):
         if self.http_session is None:
             # Create http session
-            self.http_session = ClientSession()
+            self.http_session = ClientSession(loop=self.loop)
 
         try:
             # Create pool
@@ -206,7 +216,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
                             autocommit=True
                         )
                     self.loop.create_task(self._verify_servers())
-                    await self.clean_all()
+                    # await self.clean_all()
                     logger.info("Guilds verified")
                 except Exception as e:
                     logger.exception(e, exc_info=True)

@@ -14,6 +14,7 @@ logger = logging.getLogger("lyvego")
 
 
 class Help(commands.Cog):
+    __slots__ = ("bot")
     def __init__(self, bot):
         self.bot = bot
 
@@ -282,7 +283,7 @@ class Help(commands.Cog):
 
     @commands.command()
     async def vote(self, ctx):
-        await ctx.send("https://top.gg/bot/698945792232390697")
+        await ctx.send("https://top.gg/bot/702648685263323187/vote")
         try:
             await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
         except:
@@ -345,6 +346,60 @@ class Help(commands.Cog):
             await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
         except:
             pass
+
+    # async def announce_owner_handler(self, user, embed):
+    #     dm_notif = await user.send(embed=embed)
+    #     bot_reaction = await dm_notif.add_reaction("<a:wrong_checkmark:709737435889664112>")
+    #     def check(reaction, user_react):
+    #         return user == user_react and "<a:wrong_checkmark:709737435889664112>" == str(reaction.emoji)
+
+    #     while 1:
+    #         try:
+    #             reaction, user_react = await self.bot.wait_for('reaction_add', check=check, timeout=180.0)
+    #         except asyncio.TimeoutError:
+    #             return
+    #             # return await dm_notif.delete()
+
+    #         if "<a:wrong_checkmark:709737435889664112>" == str(reaction.emoji):
+    #             try:
+    #                 await self.bot.change_annonce(str(user.id))
+    #                 break
+    #             except Exception as e:
+    #                 logger.exception(e, exc_info=True)
+
+    #     try:
+    #         success_disable = await user.send("Successfully disabled")
+    #         await success_disable.add_reaction("<a:valid_checkmark:709737579460952145>")
+    #     except Exception as e:
+    #         logger.exception(e, exc_info=True)
+
+    # @commands.command()
+    # @commands.is_owner()
+    # async def annonce(self, ctx, *message):
+    #     message = " ".join(message)
+    #     msg_send = 0
+    #     embed = discord.Embed(
+    #         title="Service information",
+    #         timestamp=dctt(),
+    #         color=self.bot.color,
+    #         description=message
+    #     )
+    #     buffer = set()
+    #     for guild in self.bot.guilds:
+    #         try:
+    #             await self.bot.insert_annonce(str(guild.owner.id), str(guild.id), 1)
+    #         except:
+    #             pass
+    #         try:
+    #             is_enable = await self.bot.get_annonce(str(guild.owner.id))
+    #             if is_enable:
+    #                 if guild.owner.id not in buffer:
+    #                     self.bot.loop.create_task(self.announce_owner_handler(guild.owner, embed))
+    #                     buffer.add(guild.owner.id)
+    #                     msg_send += 1
+    #         except Exception as e:
+    #             logger.exception(e, exc_info=True)
+    #     await ctx.send(content=f"{msg_send}/{len(self.bot.guilds)} ont été envoyer aux servers owner", embed=embed)
 
     @commands.command()
     async def dashboard(self, ctx: commands.Context):

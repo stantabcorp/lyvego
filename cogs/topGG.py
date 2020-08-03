@@ -10,7 +10,7 @@ from discord.ext import commands
 
 class TopGG(commands.Cog):
     """Handles interactions with the top.gg API"""
-
+    __slots__ = ("bot", "token", "dblpy")
     def __init__(self, bot):
         self.bot = bot
         self.token = os.environ["DBL_TOKEN"]
