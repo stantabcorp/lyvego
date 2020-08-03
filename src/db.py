@@ -129,7 +129,7 @@ class Pool:
 
 
 
-    def _close(self):
+    async def _close(self):
         self.pool.close()
-        self.pool.wait_closed()
+        await self.pool.wait_closed()
         self.loop.close()

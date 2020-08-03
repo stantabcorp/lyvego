@@ -69,6 +69,16 @@ class Settings(commands.Cog):
         else:
             raise errors.StreamerNotFound(self.bot.locales[lang]["error_streamer_not_found"].format(ctx.author))
 
+    @commands.command()
+    @commands.cooldown(4, 30, commands.BucketType.user)
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    async def purge(self, ctx):
+        def is_me(user):
+            return ctx.me == user.author
+
+        deleted = await ctx.channel.purge(check=is_me)
+        await ctx.message.delete()
 
     @commands.command(name="clips")
     @commands.cooldown(4, 30, commands.BucketType.user)
@@ -248,7 +258,7 @@ class Settings(commands.Cog):
         end += 8
         while True:
             try:
-                reaction, user = await self.bot.wait_for('reaction_add', check=predicate, timeout=120.0)
+                reaction, user = await self.bot.wait_for('reaction_add', check=predicate, timeout=180.0)
             except asyncio.TimeoutError:
                 try:
                     await ctx.message.delete()
@@ -277,15 +287,6 @@ class Settings(commands.Cog):
             await pages.remove_reaction(reaction.emoji, user)
             await pages.edit(embed=embed)
 
-
-
-    @commands.command(name="get")
-    async def get_streamer(self, ctx):
-        resp = await rh.get_streamer(
-            ctx,
-            self.bot.http_session
-        )
-        await ctx.send(resp)
 
 def setup(bot):
     bot.add_cog(Settings(bot))

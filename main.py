@@ -15,7 +15,7 @@ from discord.ext.commands import when_mentioned_or
 
 from src.constants import HOST, PASSWORD, PORT, TOKEN, USER
 from src.db import Pool
-from src.utils import AUTHORIZATION
+from src.utils import AUTHORIZATION, dctt
 
 logger = logging.getLogger("lyvego")
 logger.setLevel(logging.DEBUG)
@@ -89,6 +89,24 @@ class Lyvego(commands.AutoShardedBot, Pool):
             )
         except Exception as e:
             logger.exception(e, exc_info=True)
+
+        chan_logger = self.get_channel(739633667906732143)
+        embed = discord.Embed(
+            title="Bot added to " + guild.name,
+            timestamp=dctt(),
+            color=self.color
+        )
+        embed.add_field(
+            name="<:users:693053423494365214> Members",
+            value=len(guild.members)
+        )
+        embed.add_field(
+            name="<:hashtag:693056105076621342> Channels",
+            value=len(guild.channels)
+        )
+        embed.set_thumbnail(url=guild.icon_url)
+        embed.set_footer(icon_url=guild.me.avatar_url)
+        await chan_logger.send(embed=embed)
 
     async def on_guild_remove(self, guild: discord.Guild):
         try:
@@ -187,7 +205,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
                             maxsize=1000,
                             autocommit=True
                         )
-                    await self._verify_servers()
+                    self.loop.create_task(self._verify_servers())
                     await self.clean_all()
                     logger.info("Guilds verified")
                 except Exception as e:
@@ -206,7 +224,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
 
     def _exit(self):
         try:
-            self._close()
+            self.loop.run_until_complete(self._close())
             logger.info("Pool closed")
         except Exception as e:
             logger.exception(e, exc_info=True)
