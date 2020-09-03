@@ -30,6 +30,18 @@ class RequestHandler:
         )
         return resp
 
+    async def delete_streamer(self, ctx: commands.Context, session: ClientSession, **kwargs):
+        """
+        POST - JSON settings for this guild
+        """
+        resp = await session.request(
+            method="DELETE",
+            url=f"{self.api_root}settings/{ctx.guild.id}",
+            headers={"Authorization": AUTHORIZATION},
+            **kwargs
+        )
+        return resp
+
     async def get_streamer(self, ctx: commands.Context, session: ClientSession):
         """
         GET - JSON settings for this guild

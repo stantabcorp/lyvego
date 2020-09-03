@@ -32,6 +32,14 @@ class Pool:
                 await conn.commit()
                 await cur.close()
 
+    async def clean_by_streamer(self, streamer_id):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cur:
+
+                await cur.execute("DELETE FROM bot_messages WHERE streamer_id=%s", (streamer_id, ))
+                await conn.commit()
+                await cur.close()
+
 
     async def select_message(self, streamer_id):
         async with self.pool.acquire() as conn:

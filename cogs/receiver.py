@@ -57,27 +57,27 @@ class Receiver(commands.Cog):
 
     async def _stream_event(self, events):
         for event in events:
-            if event.status == "ended" and event.updates.on_end:
+            if event.status == "ended":
                 messages = await self.bot.select_message(event.streamer)
                 for message in messages:
                     try:
-                        if message["on_end"]:
+                        if message["on_end"] and event.updates.on_end:
                             channel = self.bot.get_channel(int(event.channel))
                             msg = await channel.fetch_message(int(message["message_id"]))
-                            await self.bot.clean(message["message_id"])
                             await msg.delete()
-                            logger.info(f"{msg.id} deleted")
-                        else:
-                            await self.bot.clean(message["message_id"])
+                            # logger.info(f"{msg.id} deleted")
+
                     except:
                         pass
+                await self.bot.clean_by_streamer(event.streamer)
+                logger.info(f"{event.streamer} ended")
             elif event.status == "changed":
                 messages = await self.bot.select_message(event.streamer)
                 checker = []
                 for c in messages:
                     for v in c.values():
                         checker.append(v)
-                if (event.streamer and event.channel) in checker:
+                if event.streamer in checker and event.channel in checker:
                     tmp_msg = []
                     for message in messages:
                         try:
@@ -85,13 +85,14 @@ class Receiver(commands.Cog):
                                 channel = self.bot.get_channel(int(event.channel))
                                 msg = await channel.fetch_message(int(message["message_id"]))
                                 embed = self.on_live_embed(event.embed, channel.guild)
-                                await msg.edit(embed=embed)
+                                await msg.edit(content=event.message, embed=embed)
                                 await self.bot.update_messages(message["streamer_id"])
                                 tmp_msg.append(msg.id)
                                 logger.info(f"{msg.id} edited")
                         except Exception as e:
                             logger.exception(e, exc_info=True)
                 else:
+                    logger.info(f"{event.streamer} started")
                     channel = self.bot.get_channel(int(event.channel))
                     embed = self.on_live_embed(event.embed, channel.guild)
                     msg = await channel.send(
@@ -204,7 +205,7 @@ class Receiver(commands.Cog):
             return
         embed = discord.Embed(
             title="TOP.GG upvote",
-            description="Your vote has been registered ! Thank you ❤️\nYou can vote again in 12 hours on the same [link](https://top.gg/bot/702648685263323187/vote).\nIf you have any question come over our [discord server](https://discord.gg/E4nVPd2)\nYou can react below to disable notification on upvote.",
+            description="Your vote has been registered ! Thank you ❤️\nYou can vote again in 12 hours on the same [link](https://top.gg/bot/702648685263323187/vote).\nIf you have any question come over our [discord server](https://discord.gg/E4nVPd2)\nYou can react below for the next 360s to disable notification on upvote.",
             timestamp=dctt(),
             color=self.bot.blue
         )
@@ -222,9 +223,10 @@ class Receiver(commands.Cog):
 
         while 1:
             try:
-
-                reaction, user_react = await self.bot.wait_for('reaction_add', check=check, timeout=120.0)
+                logger.info(f"wait for reaction {user.name}")
+                reaction, user_react = await self.bot.wait_for('reaction_add', check=check, timeout=360.0)
             except asyncio.TimeoutError:
+                await dm_notif.remove_reaction(bot_reaction, dm_notif.author)
                 return
                 # return await dm_notif.delete()
 
@@ -238,6 +240,7 @@ class Receiver(commands.Cog):
         try:
             success_disable = await user.send("Successfully disabled")
             await success_disable.add_reaction("<a:valid_checkmark:709737579460952145>")
+            await dm_notif.remove_reaction(bot_reaction, dm_notif.author)
         except Exception as e:
             logger.exception(e, exc_info=True)
 
@@ -250,7 +253,7 @@ class Receiver(commands.Cog):
         await self.bot.wait_until_ready()
         app = web.Application()
         app.router.add_post("/lyvego", self.handler)
-        app.router.add_post("/webhook", self.webhook_handler)
+        # app.router.add_post("/webhook", self.webhook_handler)
         # app.router.add_get("/get", self.test)
         runner = web.AppRunner(app)
         await runner.setup()
