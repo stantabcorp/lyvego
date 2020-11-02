@@ -64,6 +64,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
         self.remove_command("help")
         self.loader()
 
+
     async def _get_prefix(self, bot, message):
         try:
             prefix = await self.getg_prefix(message.guild.id)
@@ -156,6 +157,8 @@ class Lyvego(commands.AutoShardedBot, Pool):
             return False
 
     async def _verify_servers(self):
+        while self.pool is None:
+            pass
         servers = await self.get_guilds_registered()
         bot_guilds_ids = []
         for bguild in self.guilds:
@@ -196,7 +199,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
                 locales[file[:2]] = json.load(f)
         return locales
 
-    async def on_ready(self):
+    async def init_async(self):
         if self.http_session is None:
             # Create http session
             self.http_session = ClientSession(loop=self.loop)
@@ -220,10 +223,10 @@ class Lyvego(commands.AutoShardedBot, Pool):
                     logger.info("Guilds verified")
                 except Exception as e:
                     logger.exception(e, exc_info=True)
-
         except Exception as e:
             logger.exception(e, exc_info=True)
 
+    async def on_ready(self):
         await self.change_presence(
             activity=discord.Activity(
                 name="!!help | lyvego.com",

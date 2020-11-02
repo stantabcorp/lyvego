@@ -1,19 +1,13 @@
-import asyncio
-import datetime as dt
 import json
 import logging
-import os
 import time
 from collections import namedtuple
 
 import discord
-import pymysql
 from aiohttp import web
 from discord.ext import commands
-
 from src.constants import API_KEY
 from src.utils import dctt
-
 
 logger = logging.getLogger("lyvego")
 
@@ -58,17 +52,18 @@ class Receiver(commands.Cog):
     async def _stream_event(self, events):
         for event in events:
             if event.status == "ended":
-                messages = await self.bot.select_message(event.streamer)
-                for message in messages:
-                    try:
-                        if message["on_end"] and event.updates.on_end:
-                            channel = self.bot.get_channel(int(event.channel))
-                            msg = await channel.fetch_message(int(message["message_id"]))
-                            await msg.delete()
-                            # logger.info(f"{msg.id} deleted")
-
-                    except:
-                        pass
+                try:
+                    messages = await self.bot.select_message(event.streamer)
+                    for message in messages:
+                        try:
+                            if message["on_end"] and event.updates.on_end:
+                                channel = self.bot.get_channel(int(event.channel))
+                                msg = await channel.fetch_message(int(message["message_id"]))
+                                await msg.delete()
+                        except:
+                            pass
+                except Exception as exc:
+                    logger.exception(f"receiver.py line 74: {exc}", exc_info=True)
                 await self.bot.clean_by_streamer(event.streamer)
                 logger.info(f"{event.streamer} ended")
             elif event.status == "changed":
@@ -196,64 +191,68 @@ class Receiver(commands.Cog):
         user = self.bot.get_user(int(data['user']))
         channel = self.bot.get_channel(715158139242020915)
         await channel.send("**{0}** just voted for **Lyvego** OwO".format(user.name))
-        try:
-            await self.bot.insert_topgg(str(user.id), str(user.name))
-        except: # already in the db
-            pass
-        is_accepted = await self.bot.get_topgg_user(user.id)
-        if not is_accepted:
-            return
-        embed = discord.Embed(
-            title="TOP.GG upvote",
-            description="Your vote has been registered ! Thank you ❤️\nYou can vote again in 12 hours on the same [link](https://top.gg/bot/702648685263323187/vote).\nIf you have any question come over our [discord server](https://discord.gg/E4nVPd2)\nYou can react below for the next 360s to disable notification on upvote.",
-            timestamp=dctt(),
-            color=self.bot.blue
-        )
-        embed.set_thumbnail(url="https://top.gg/images/dblnew.png")
-        embed.set_footer(
-            text="lyvego.com",
-            icon_url=user.avatar_url
-        )
-        dm_notif = await user.send(embed=embed)
+        # try:
+        #     await self.bot.insert_topgg(str(user.id), str(user.name))
+        # except: # already in the db
+        #     pass
+        # is_accepted = await self.bot.get_topgg_user(user.id)
+        # if not is_accepted:
+        #     return
+        # embed = discord.Embed(
+        #     title="TOP.GG upvote",
+        #     description="Your vote has been registered ! Thank you ❤️\nYou can vote again in 12 hours on the same [link](https://top.gg/bot/702648685263323187/vote).\nIf you have any question come over our [discord server](https://discord.gg/E4nVPd2)\nYou can react below for the next 360s to disable notification on upvote.",
+        #     timestamp=dctt(),
+        #     color=self.bot.blue
+        # )
+        # embed.set_thumbnail(url="https://top.gg/images/dblnew.png")
+        # embed.set_footer(
+        #     text="lyvego.com",
+        #     icon_url=user.avatar_url
+        # )
+        # dm_notif = await user.send(embed=embed)
 
-        bot_reaction = await dm_notif.add_reaction("<a:wrong_checkmark:709737435889664112>")
+        # bot_reaction = await dm_notif.add_reaction("<a:wrong_checkmark:709737435889664112>")
 
-        def check(reaction, user_react):
-            return user == user_react and "<a:wrong_checkmark:709737435889664112>" == str(reaction.emoji)
+        # def check(reaction, user_react):
+        #     return user == user_react and "<a:wrong_checkmark:709737435889664112>" == str(reaction.emoji)
 
-        while 1:
-            try:
-                logger.info(f"wait for reaction {user.name}")
-                reaction, user_react = await self.bot.wait_for('reaction_add', check=check, timeout=360.0)
-            except asyncio.TimeoutError:
-                await dm_notif.remove_reaction(bot_reaction, dm_notif.author)
-                return
-                # return await dm_notif.delete()
+        # while 1:
+        #     try:
+        #         logger.info(f"wait for reaction {user.name}")
+        #         reaction, user_react = await self.bot.wait_for('reaction_add', check=check, timeout=360.0)
+        #     except asyncio.TimeoutError:
+        #         await dm_notif.remove_reaction(bot_reaction, dm_notif.author)
+        #         return
+        #         # return await dm_notif.delete()
 
-            if "<a:wrong_checkmark:709737435889664112>" == str(reaction.emoji):
-                try:
-                    await self.bot.change_topgg(str(user.id))
-                    break
-                except Exception as e:
-                    logger.exception(e, exc_info=True)
+        #     if "<a:wrong_checkmark:709737435889664112>" == str(reaction.emoji):
+        #         try:
+        #             await self.bot.change_topgg(str(user.id))
+        #             break
+        #         except Exception as e:
+        #             logger.exception(e, exc_info=True)
 
-        try:
-            success_disable = await user.send("Successfully disabled")
-            await success_disable.add_reaction("<a:valid_checkmark:709737579460952145>")
-            await dm_notif.remove_reaction(bot_reaction, dm_notif.author)
-        except Exception as e:
-            logger.exception(e, exc_info=True)
+        # try:
+        #     success_disable = await user.send("Successfully disabled")
+        #     await success_disable.add_reaction("<a:valid_checkmark:709737579460952145>")
+        #     await dm_notif.remove_reaction(bot_reaction, dm_notif.author)
+        # except Exception as e:
+        #     logger.exception(e, exc_info=True)
 
         # await channel.send(data)
 
     # async def test(self, request):
     #     return web.Response(text="yeee")
 
+    async def status(self, request):
+        hearthbeat = f"{sum([x[1] for x in self.bot.latencies]) / self.bot.shard_count:.3f}"
+        return web.Response(body=hearthbeat, status=200)
+
     async def run_server(self):
-        await self.bot.wait_until_ready()
-        app = web.Application()
+        app = web.Application(loop=self.bot.loop)
         app.router.add_post("/lyvego", self.handler)
-        # app.router.add_post("/webhook", self.webhook_handler)
+        app.router.add_get("/ping", self.status)
+        app.router.add_post("/webhook", self.webhook_handler)
         # app.router.add_get("/get", self.test)
         runner = web.AppRunner(app)
         await runner.setup()

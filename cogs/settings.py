@@ -51,7 +51,7 @@ class Settings(commands.Cog):
         if resp.status in range(200, 300):
 
             embed = discord.Embed(
-                description=self.bot.locales[lang]["description_configure_lyvego"],
+                description=self.bot.locales[lang]["description_configure_lyvego"].format(self.bot.lyvego_url),
                 color=self.bot.color,
                 timestamp=dctt()
             )
@@ -144,7 +144,7 @@ class Settings(commands.Cog):
         if resp.status in range(200, 300):
 
             embed = discord.Embed(
-                description=self.bot.locales[lang]["description_configure_lyvego"],
+                description=self.bot.locales[lang]["description_configure_lyvego"].format(self.bot.lyvego_url),
                 color=self.bot.color,
                 timestamp=dctt()
             )

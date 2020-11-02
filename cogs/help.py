@@ -1,14 +1,10 @@
 import asyncio
 import logging
-import os
 
 import discord
 from discord.ext import commands
-
 from errors import LanguageNotFound
-from src.constants import AUTHORIZATION
 from src.utils import dctt
-
 
 logger = logging.getLogger("lyvego")
 
@@ -39,7 +35,7 @@ class Help(commands.Cog):
             inline=False
         )
         embed.add_field(
-            name=self.bot.locales[lang]["help_hub_twitch"].format(react_list[2]),
+            name=self.bot.locales[lang]["help_hub_settings"].format(react_list[2]),
             value=self.bot.locales[lang]["help_hub_tap_to_see"].format(react_list[2]),
             inline=False
         )
