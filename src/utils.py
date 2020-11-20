@@ -43,7 +43,7 @@ class RequestHandler:
     async def top_clips(self, session: ClientSession, streamer: str, parameters: str=""):
         resp = await session.request(
             method="GET",
-            url=f"{self.api_root}clips?streamer={streamer}{parameters}",
+            url=f"{API_ROOT}clips?streamer={streamer}{parameters}",
             headers={"Authorization": AUTHORIZATION}
         )
         if resp.status >= 200 and resp.status <= 299:

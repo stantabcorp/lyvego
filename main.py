@@ -1,11 +1,9 @@
-import asyncio
 import json
 import logging
 import os
 import sys
-import time
 from typing import Optional
-
+import uuid
 import aiomysql
 import discord
 from aiohttp import ClientSession
@@ -59,7 +57,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
         self.blue = 0x158ed4
         self.color = 0x6441a5
         self.color_str = str(hex(self.color))[2:]
-        self.locales = None
+        self.locales = {}
         self.lyvego_url = "https://lyvego.com"
         self.load_locales()
         self.remove_command("help")
@@ -159,6 +157,11 @@ class Lyvego(commands.AutoShardedBot, Pool):
 
     async def _verify_servers(self):
         servers = await self.get_guilds_registered()
+        try:
+            with open(f"save_bdd-{uuid.uuid4()}.json", 'w', encoding='utf-8') as f:
+                f.write(str(servers))
+        except:
+            pass
         bot_guilds_ids = []
         for bguild in self.guilds:
             bot_guilds_ids.append(str(bguild.id))
@@ -184,7 +187,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
                 try:
                     await self.http_session.request(
                         method="DELETE",
-                        url=f"https://api.lyvego.com/v1/bot/server/{bdsid}",
+                        url=f"{API_ROOT}bot/server/{bdsid}",
                         headers={"Authorization": AUTHORIZATION}
                     )
                     logger.info(f"{bdsid} removed by verifier")
@@ -213,7 +216,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
                             password=PASSWORD,
                             db=USER,
                             loop=self.loop,
-                            maxsize=1000,
+                            maxsize=10,
                             autocommit=True
                         )
                     self.loop.create_task(self._verify_servers())
