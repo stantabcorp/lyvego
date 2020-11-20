@@ -1,0 +1,48 @@
+{
+    "title_invite_lyvego": "Pozvat lyvego",
+    "description_invite_lyvego": "[Pozvěte mě]({0})",
+
+    "description_configure_lyvego": "⚙️ Plně konfigurovat bota můžete na [lyvego.com]({0})",
+
+    "help_hub_twitch": "{0} Zobrazení příkazů souvisejících se streamem",
+    "help_hub_settings": "{0} Zobrazení příkazů souvisejících s nastavením",
+    "help_hub_tap_to_see": "Pro jejich zobrazení klikněte na {0} !",
+    "help_prefix": "Můžete nastavit vlastní předponu\n(Pouze na Serveru - je vyžadováno oprávnění administrátor)",
+    "help_dashboard": "Poslat odkaz na řídící panel.",
+    "help_invite": "Poslat odkaz pro pozvání bota.",
+    "help_language": "Dostupné jazyky: {0}\nJejich seznam můžete vidět pomocí parametru --list namísto kódu jazyka.\n(Server only - Admin požadován)",
+    "help_description_header": "Náš [discord](https://discord.gg/E4nVPd2).\nKonfigurovat bota můžete na [lyvego.com]({0})\nPři použití příkazu odeberte <> nebo [].\n<arg> znamená, že je tento argument požadován\n[arg] znamená, že tento argument je volitelný\n arg1 | arg2 znamená arg1 NEBO arg2.",
+    "help_streamer": "Odeslat upozornění, když streamer spustí stream. (Pouze na Serveru - je vyžadováno oprávnění administrátor)",
+    "help_follow": "Odeslat upozornění, když někdo začne sledovat tohoto streamera. (Pouze na Serveru - je vyžadováno oprávnění administrátor)",
+    "help_clips": "Odeslat upozornění, když někdo vytvoří klip na kanále tohoto streamera (Pouze na Serveru - je vyžadováno oprávnění administrátor)",
+    "help_topclip": "Zjistěte nejstedovanějsí klipy za poslední týden. Výchozí množství je 5. (Pouze na Serveru)",
+    "help_getprefix": "Zjistěte aktuální předponu pro tento server.",
+    "help_about": "O botovi.",
+    "help_vote": "Odeslat odkaz, kde můžete hlasovat pro bota.",  
+    "help_ping": "Zjistit aktuální ping bota.",
+    "newprefix_message": "{0} Nová předpona : `{1}`",
+
+    "author_name_success_added": "{0} úspěšně přidáno",
+    "author_name_most_viewed_clips": "{0} - Nejsledovanější klipy tohoto týdne",
+    "author_name_commands": "Lyvego příkazy",
+    "about_description": "Pokud nás chcete podpořit, můžete poslat donate na <:kofi:693473314433138718> [Ko-fi](https://ko-fi.com/takitsu).Zdrojový kód je dostupný na <:github:693519776022003742> [Githubu](https://github.com/wynnex/lyvego).Pro bota můžete hlasovat na [top.gg](https://top.gg/bot/702648685263323187/vote)",
+    "paginated_author_twitch_commands": "Twitch příkazy",
+    "paginated_author_settings_commands": "Nastavovací příkazy",
+
+    "field_value_view_clip": "[Zobrazit klip]({0})",
+    "field_name_views": "Zhlédnutí",
+    "field_value_clipper": "Uživatel, který vytvořil klip",
+
+    "message_started_following": "{follower} právě začal sledovat {followed}.",
+    "message_stream_live": "@everyone Ahoj {streamer} právě začal vysílat hru {game} ! Běžte se podívat",
+
+    "new_language": "{0} Nový jazyk : `{1}`",
+    "available_languages": "Dostupné jazyky :\n{0}",
+
+    "error_amount_topclips": "Maximální množstvá nejsledovanějších klipů je 100 !",
+    "error_ratelimited": "{0} Tento příkaz má rate limit, prosím, zkuste znovu za {1:.2f}s",
+    "error_missing_manages_permissions": "{0} Pokud chcete použít všechny funkce, měli byste botovi udělit oprávnění `Zpráva zpráv`.",
+    "error_language_not_found": "{0} Omlouváme se, ale `{1}` ještě není implementováno, nebo neexistuje.",
+    "error_streamer_not_found": "{0} Tento streamer neexistuje, prosím, zkuste to znovu s platným uživatelským jménem.",
+    "error_clips_not_found": "{0} Omlouváme se, ale na kanále tohoto streamera nejsou žádné klipy."
+}
