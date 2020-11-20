@@ -18,7 +18,7 @@
     "help_topclip": "Zjistěte nejstedovanějsí klipy za poslední týden. Výchozí množství je 5. (Pouze na Serveru)",
     "help_getprefix": "Zjistěte aktuální předponu pro tento server.",
     "help_about": "O botovi.",
-    "help_vote": "Odeslat odkaz, kde můžete hlasovat pro bota.",  
+    "help_vote": "Odeslat odkaz, kde můžete hlasovat pro bota.",
     "help_ping": "Zjistit aktuální ping bota.",
     "newprefix_message": "{0} Nová předpona : `{1}`",
 
@@ -34,7 +34,7 @@
     "field_value_clipper": "Uživatel, který vytvořil klip",
 
     "message_started_following": "{follower} právě začal sledovat {followed}.",
-    "message_stream_live": "@everyone Ahoj {streamer} právě začal vysílat hru {game} ! Běžte se podívat",
+    "message_stream_live": "Ahoj {streamer} právě začal vysílat hru {game} ! Běžte se podívat {link}",
 
     "new_language": "{0} Nový jazyk : `{1}`",
     "available_languages": "Dostupné jazyky :\n{0}",
