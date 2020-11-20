@@ -34,7 +34,7 @@
     "field_value_clipper": "Clipper",
 
     "message_started_following": "{follower} just started following {followed}.",
-    "message_stream_live": "@everyone Hey {streamer} is live on {game} ! Go check him out",
+    "message_stream_live": "Hey {streamer} is live on {game}! Go check it out on {link}.",
 
     "new_language": "{0} New language : `{1}`",
     "available_languages": "Available languages :\n{0}",

@@ -5,7 +5,7 @@ import functools
 from aiohttp import ClientSession
 from discord.ext import commands
 
-from src.constants import AUTHORIZATION
+from src.constants import AUTHORIZATION, API_ROOT
 
 
 def dctt():
@@ -15,28 +15,13 @@ def dctt():
     return dt.datetime.utcnow()
 
 class RequestHandler:
-    def __init__(self):
-        self.api_root = os.environ["API_ROOT"]
-
     async def post_streamer(self, ctx: commands.Context, session: ClientSession, **kwargs):
         """
         POST - JSON settings for this guild
         """
         resp = await session.request(
             method="POST",
-            url=f"{self.api_root}settings/{ctx.guild.id}",
-            headers={"Authorization": AUTHORIZATION},
-            **kwargs
-        )
-        return resp
-
-    async def delete_streamer(self, ctx: commands.Context, session: ClientSession, **kwargs):
-        """
-        POST - JSON settings for this guild
-        """
-        resp = await session.request(
-            method="DELETE",
-            url=f"{self.api_root}settings/{ctx.guild.id}",
+            url=f"{API_ROOT}settings/{ctx.guild.id}",
             headers={"Authorization": AUTHORIZATION},
             **kwargs
         )
@@ -48,7 +33,7 @@ class RequestHandler:
         """
         resp = await session.request(
             method="GET",
-            url=f"{self.api_root}settings/{ctx.guild.id}",
+            url=f"{API_ROOT}settings/{ctx.guild.id}",
             headers={"Authorization": AUTHORIZATION}
         )
         if resp.status >= 200 and resp.status <= 299:

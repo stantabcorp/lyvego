@@ -12,9 +12,9 @@ from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import when_mentioned_or
 
-from src.constants import HOST, PASSWORD, PORT, TOKEN, USER
+from src.constants import *
 from src.db import Pool
-from src.utils import AUTHORIZATION, dctt
+from src.utils import dctt
 
 logger = logging.getLogger("lyvego")
 logger.setLevel(logging.DEBUG)
@@ -43,7 +43,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
         "locales",
         "lyvego_url"
     )
-    def __init__(self, *args, loop=None, **kwargs):
+    def __init__(self):
         super().__init__(
             command_prefix=self._get_prefix,
             activity=discord.Game(
@@ -59,8 +59,9 @@ class Lyvego(commands.AutoShardedBot, Pool):
         self.blue = 0x158ed4
         self.color = 0x6441a5
         self.color_str = str(hex(self.color))[2:]
-        self.locales = self.init_locales()
+        self.locales = None
         self.lyvego_url = "https://lyvego.com"
+        self.load_locales()
         self.remove_command("help")
         self.loader()
 
@@ -157,8 +158,6 @@ class Lyvego(commands.AutoShardedBot, Pool):
             return False
 
     async def _verify_servers(self):
-        while self.pool is None:
-            pass
         servers = await self.get_guilds_registered()
         bot_guilds_ids = []
         for bguild in self.guilds:
@@ -167,7 +166,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
                 try:
                     await self.http_session.request(
                         method="POST",
-                        url="https://api.lyvego.com/v1/bot/server",
+                        url=f"{API_ROOT}bot/server",
                         headers={"Authorization": AUTHORIZATION},
                         json={
                             "discord_id": bguild.id,
@@ -178,8 +177,8 @@ class Lyvego(commands.AutoShardedBot, Pool):
                         }
                     )
                     logger.info(f"{bguild.id} added by verifier")
-                except:
-                    pass
+                except Exception as e:
+                    logger.exception(e, exc_info=True)
         for bdsid in servers:
             if not self._value_exist(bot_guilds_ids, bdsid):
                 try:
@@ -189,17 +188,16 @@ class Lyvego(commands.AutoShardedBot, Pool):
                         headers={"Authorization": AUTHORIZATION}
                     )
                     logger.info(f"{bdsid} removed by verifier")
-                except:
-                    pass
+                except Exception as e:
+                    logger.exception(e, exc_info=True)
 
-    def init_locales(self):
-        locales = {}
+    def load_locales(self):
         for file in os.listdir("locales/"):
             with open(f"locales/{file}", "r") as f:
-                locales[file[:2]] = json.load(f)
-        return locales
+                self.locales[file[:2]] = json.load(f)
 
-    async def init_async(self):
+    async def on_ready(self):
+
         if self.http_session is None:
             # Create http session
             self.http_session = ClientSession(loop=self.loop)
@@ -223,10 +221,10 @@ class Lyvego(commands.AutoShardedBot, Pool):
                     logger.info("Guilds verified")
                 except Exception as e:
                     logger.exception(e, exc_info=True)
+
         except Exception as e:
             logger.exception(e, exc_info=True)
 
-    async def on_ready(self):
         await self.change_presence(
             activity=discord.Activity(
                 name="!!help | lyvego.com",

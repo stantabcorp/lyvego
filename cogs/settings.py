@@ -51,7 +51,7 @@ class Settings(commands.Cog):
         if resp.status in range(200, 300):
 
             embed = discord.Embed(
-                description=self.bot.locales[lang]["description_configure_lyvego"].format(self.bot.lyvego_url),
+                description=self.bot.locales[lang]["description_configure_lyvego"],
                 color=self.bot.color,
                 timestamp=dctt()
             )
@@ -144,7 +144,7 @@ class Settings(commands.Cog):
         if resp.status in range(200, 300):
 
             embed = discord.Embed(
-                description=self.bot.locales[lang]["description_configure_lyvego"].format(self.bot.lyvego_url),
+                description=self.bot.locales[lang]["description_configure_lyvego"],
                 color=self.bot.color,
                 timestamp=dctt()
             )
@@ -287,6 +287,16 @@ class Settings(commands.Cog):
 
             await pages.remove_reaction(reaction.emoji, user)
             await pages.edit(embed=embed)
+
+    @commands.command(aliases=["locales"])
+    @commands.is_owner()
+    async def reload_locales(self, ctx):
+        try:
+            self.bot.load_locales()
+        except Exception as e:
+            return await ctx.send(f"Cannot load locales : {e}")
+
+        await ctx.send(f"Locales loaded for those languages : **{' '.join(list(self.bot.locales.keys()))}**")
 
 
 def setup(bot):

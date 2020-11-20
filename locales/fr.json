@@ -20,7 +20,7 @@
     "help_about": "A propos du bot.",
     "help_vote": "Lien pour voter pour le bot.",
     "help_ping": "Ping du bot.",
-    "newprefix_message": "{0} Nouveau prefix : `{1}`",
+    "newprefix_message": "{0} Nouveau préfix : `{1}`",
 
     "author_name_success_added": "{0} ajouté avec succés",
     "author_name_most_viewed_clips": "{0} - Clips les plus vues de la semaine",
@@ -34,7 +34,7 @@
     "field_value_clipper": "Clippeur",
 
     "message_started_following": "{follower} vient juste de suivre {followed}.",
-    "message_stream_live": "@everyone Hey {streamer} est en live sur {game} ! Allez le voir",
+    "message_stream_live": "Hey {streamer} est en live sur {game} ! Allez le voir sur {link}",
 
     "new_language": "{0} Nouvelle langue : `{1}`",
     "available_languages": "Langues disponible :\n{0}",

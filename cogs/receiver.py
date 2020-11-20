@@ -1,3 +1,5 @@
+import asyncio
+import datetime as dt
 import json
 import logging
 import time
@@ -63,7 +65,7 @@ class Receiver(commands.Cog):
                         except:
                             pass
                 except Exception as exc:
-                    logger.exception(f"receiver.py line 74: {exc}", exc_info=True)
+                    logger.exception(f"receiver.py line 68: {exc}", exc_info=True)
                 await self.bot.clean_by_streamer(event.streamer)
                 logger.info(f"{event.streamer} ended")
             elif event.status == "changed":
@@ -191,6 +193,7 @@ class Receiver(commands.Cog):
         user = self.bot.get_user(int(data['user']))
         channel = self.bot.get_channel(715158139242020915)
         await channel.send("**{0}** just voted for **Lyvego** OwO".format(user.name))
+        return resp
         # try:
         #     await self.bot.insert_topgg(str(user.id), str(user.name))
         # except: # already in the db

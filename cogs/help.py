@@ -4,6 +4,7 @@ import logging
 import discord
 from discord.ext import commands
 from errors import LanguageNotFound
+from src.constants import AUTHORIZATION
 from src.utils import dctt
 
 logger = logging.getLogger("lyvego")
