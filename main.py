@@ -44,6 +44,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
     def __init__(self):
         super().__init__(
             command_prefix=self._get_prefix,
+            case_insensitive=True,
             activity=discord.Game(
                 name="Starting..."
             ),
@@ -122,7 +123,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
         try:
             await self.http_session.request(
                 method="DELETE",
-                url=f"https://api.lyvego.com/v1/bot/server/{guild.id}",
+                url=f"{API_ROOT}bot/server/{guild.id}",
                 headers={"Authorization": AUTHORIZATION}
             )
         except Exception as e:

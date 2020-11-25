@@ -6,8 +6,7 @@ import discord
 from discord.ext import commands
 
 import errors
-from src import rh
-from src.utils import dctt
+from src import *
 
 logger = logging.getLogger("lyvego")
 
@@ -33,7 +32,7 @@ class Settings(commands.Cog):
     @commands.guild_only()
     async def add_follow(self, ctx: commands.Context, streamer: str):
         lang = await self.bot.getg_lang(ctx.guild.id)
-        resp = await rh.post_streamer(
+        resp = await post_streamer(
             ctx,
             self.bot.http_session,
             json=[
@@ -51,7 +50,7 @@ class Settings(commands.Cog):
         if resp.status in range(200, 300):
 
             embed = discord.Embed(
-                description=self.bot.locales[lang]["description_configure_lyvego"],
+                description=self.bot.locales[lang]["description_configure_lyvego"].format(self.bot.lyvego_url),
                 color=self.bot.color,
                 timestamp=dctt()
             )
@@ -87,7 +86,7 @@ class Settings(commands.Cog):
     @commands.guild_only()
     async def add_clips(self, ctx: commands.Context, streamer: str):
         lang = await self.bot.getg_lang(ctx.guild.id)
-        resp = await rh.post_streamer(
+        resp = await post_streamer(
             ctx,
             self.bot.http_session,
             json=[
@@ -126,7 +125,7 @@ class Settings(commands.Cog):
     @commands.guild_only()
     async def add_streamer(self, ctx: commands.Context, streamer: str):
         lang = await self.bot.getg_lang(ctx.guild.id)
-        resp = await rh.post_streamer(
+        resp = await post_streamer(
             ctx,
             self.bot.http_session,
             json=[
@@ -144,7 +143,7 @@ class Settings(commands.Cog):
         if resp.status in range(200, 300):
 
             embed = discord.Embed(
-                description=self.bot.locales[lang]["description_configure_lyvego"],
+                description=self.bot.locales[lang]["description_configure_lyvego"].format(self.bot.lyvego_url),
                 color=self.bot.color,
                 timestamp=dctt()
             )
@@ -210,7 +209,7 @@ class Settings(commands.Cog):
         if amount > 100:
             raise Exception(self.bot.locales[lang]["error_amount_topclips"])
         try:
-            clips = await rh.top_clips(self.bot.http_session, streamer, parameters=f"&amount={amount}")
+            clips = await top_clips(self.bot.http_session, streamer, parameters=f"&amount={amount}")
             if clips == None:
                 raise errors.StreamerNotFound(self.bot.locales[lang]["error_streamer_not_found"].format(ctx.author))
             clips = clips["clips"]

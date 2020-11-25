@@ -1,2 +1,1 @@
-from .utils import RequestHandler
-rh = RequestHandler()
+from .utils import *
