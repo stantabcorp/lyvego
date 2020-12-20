@@ -194,7 +194,7 @@ class Receiver(commands.Cog):
                 self._last_clip = dt.datetime.now()
                 await self._clips_event(events)
 
-            return web.Response(status=200)
+            return web.Response()
         return web.Response(status=401)
 
     async def webhook_handler(self, request):
@@ -225,13 +225,18 @@ class Receiver(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def events(self, ctx):
-        await ctx.send("Last live : **{0._last_live}** --- Last follow : **{0._last_follow} --- Last clip : {0._last_clip}".format(self))
+        embed = discord.Embed(title="Events informations")
+        embed.add_field(name="Last live", value=self._last_live)
+        embed.add_field(name="Last clip", value=self._last_clip)
+        embed.add_field(name="Last follow", value=self._last_follow)
+        await ctx.send(embed=embed)
+        # await ctx.send("Last live : **{0._last_live}** --- Last follow : **{0._last_follow}** --- Last clip : **{0._last_clip}**".format(self))
 
     @commands.command(aliases=["sr"])
     @commands.guild_only()
     @commands.is_owner()
     async def setrole(self, ctx, role: discord.Role):
-        await self.bot.insert_server_role_activity(ctx.guild.id, role.name)
+        await self.bot.insert_server_role_activity(ctx.guild.id, role.id)
         await ctx.send(f"{role.name} successfully added")
 
 

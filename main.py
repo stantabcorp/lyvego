@@ -204,8 +204,8 @@ class Lyvego(commands.AutoShardedBot, Pool):
                 self.locales[file[:2]] = json.load(f)
 
     async def update_role(self, member: discord.Member, is_adding):
-        role_name = await self.get_server_role_activity(member.guild.id)
-        role = discord.utils.get(member.guild.roles, name=role_name)
+        role_id = await self.get_server_role_activity(member.guild.id)
+        role = discord.utils.get(member.guild.roles, id=role_id)
         if role != None:
             if is_adding:
                 await member.add_roles(role, reason="Start Streaming")

@@ -1,10 +1,6 @@
-import asyncio
 import datetime as dt
-import functools
-import os
 
 import aiomysql
-from discord.ext import commands
 
 
 class Pool:
