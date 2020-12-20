@@ -1,4 +1,4 @@
-git+https://github.com/Rapptz/discord.py@sharding-rework
+git+https://github.com/Rapptz/discord.py
 aiofiles
 aiohttp
 dblpy
