@@ -12,6 +12,7 @@ logger = logging.getLogger("lyvego")
 
 class Help(commands.Cog):
     __slots__ = ("bot")
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -20,7 +21,8 @@ class Help(commands.Cog):
     @commands.bot_has_permissions(manage_messages=True)
     async def help(self, ctx: commands.Context):
         lang = await self.bot.getg_lang(ctx.guild.id)
-        react_list = ["<:lyvego:703585626053673060>", "<:twitch:703585214261231626>", "⚙️"]
+        react_list = ["<:lyvego:703585626053673060>",
+                      "<:twitch:703585214261231626>", "⚙️"]
         embed = discord.Embed(
             color=self.bot.color,
             description=self.bot.locales[lang]["help_description_header"],
@@ -31,13 +33,17 @@ class Help(commands.Cog):
             icon_url=ctx.me.avatar_url
         )
         embed.add_field(
-            name=self.bot.locales[lang]["help_hub_twitch"].format(react_list[1]),
-            value=self.bot.locales[lang]["help_hub_tap_to_see"].format(react_list[1]),
+            name=self.bot.locales[lang]["help_hub_twitch"].format(
+                react_list[1]),
+            value=self.bot.locales[lang]["help_hub_tap_to_see"].format(
+                react_list[1]),
             inline=False
         )
         embed.add_field(
-            name=self.bot.locales[lang]["help_hub_settings"].format(react_list[2]),
-            value=self.bot.locales[lang]["help_hub_tap_to_see"].format(react_list[2]),
+            name=self.bot.locales[lang]["help_hub_settings"].format(
+                react_list[2]),
+            value=self.bot.locales[lang]["help_hub_tap_to_see"].format(
+                react_list[2]),
             inline=False
         )
         embed.set_footer(
@@ -50,7 +56,7 @@ class Help(commands.Cog):
             await pages.add_reaction(reaction)
 
         def predicate(reaction, user):
-            return user == ctx.message.author  and str(reaction.emoji) in react_list
+            return user == ctx.message.author and str(reaction.emoji) in react_list
 
         while True:
             try:
@@ -74,13 +80,17 @@ class Help(commands.Cog):
                     icon_url=ctx.me.avatar_url
                 )
                 embed.add_field(
-                    name=self.bot.locales[lang]["help_hub_twitch"].format(react_list[1]),
-                    value=self.bot.locales[lang]["help_hub_tap_to_see"].format(react_list[1]),
+                    name=self.bot.locales[lang]["help_hub_twitch"].format(
+                        react_list[1]),
+                    value=self.bot.locales[lang]["help_hub_tap_to_see"].format(
+                        react_list[1]),
                     inline=False
                 )
                 embed.add_field(
-                    name=self.bot.locales[lang]["help_hub_twitch"].format(react_list[2]),
-                    value=self.bot.locales[lang]["help_hub_tap_to_see"].format(react_list[2]),
+                    name=self.bot.locales[lang]["help_hub_twitch"].format(
+                        react_list[2]),
+                    value=self.bot.locales[lang]["help_hub_tap_to_see"].format(
+                        react_list[2]),
                     inline=False
                 )
             elif react_list[1] == str(reaction.emoji):
@@ -136,7 +146,8 @@ class Help(commands.Cog):
                 )
                 embed.add_field(
                     name=f"{ctx.prefix}lang <--list | new_language>",
-                    value=self.bot.locales[lang]["help_language"].format(", ".join([x.upper() for x in self.bot.locales]).rstrip(", ")),
+                    value=self.bot.locales[lang]["help_language"].format(
+                        ", ".join([x.upper() for x in self.bot.locales]).rstrip(", ")),
                     inline=False
                 )
                 embed.add_field(
@@ -180,7 +191,8 @@ class Help(commands.Cog):
 
         embed = discord.Embed(
             color=self.bot.color,
-            description=self.bot.locales[lang]["help_description_header"].format(self.bot.lyvego_url),
+            description=self.bot.locales[lang]["help_description_header"].format(
+                self.bot.lyvego_url),
             timestamp=dctt()
         )
         embed.set_author(
@@ -214,7 +226,8 @@ class Help(commands.Cog):
         )
         embed.add_field(
             name=f"⚙️ {ctx.prefix}lang <--list | new_language>",
-            value=self.bot.locales[lang]["help_language"].format(", ".join([x.upper() for x in self.bot.locales]).rstrip(", ")),
+            value=self.bot.locales[lang]["help_language"].format(
+                ", ".join([x.upper() for x in self.bot.locales]).rstrip(", ")),
             inline=False
         )
         embed.add_field(
@@ -330,7 +343,8 @@ class Help(commands.Cog):
         lang = await self.bot.getg_lang(str(ctx.guild.id))
         embed = discord.Embed(
             title=self.bot.locales[lang]["title_invite_lyvego"],
-            description=self.bot.locales[lang]["description_invite_lyvego"].format("https://discord.com/oauth2/authorize?client_id=702648685263323187&permissions=445504&redirect_uri=https%3A%2F%2Flyvego.com%2Flogin&response_type=code&scope=bot%20identify%20email%20guilds"),
+            description=self.bot.locales[lang]["description_invite_lyvego"].format(
+                "https://discord.com/oauth2/authorize?client_id=702648685263323187&permissions=445504&redirect_uri=https%3A%2F%2Flyvego.com%2Flogin&response_type=code&scope=bot%20identify%20email%20guilds"),
             timestamp=dctt(),
             color=self.bot.color
         )
@@ -459,11 +473,13 @@ class Help(commands.Cog):
             except Exception as e:
                 logger.exception(e, exc_info=True)
         else:
-            raise LanguageNotFound(self.bot.locales[_lang]["error_language_not_found"].format(ctx.author.mention, lang))
+            raise LanguageNotFound(self.bot.locales[_lang]["error_language_not_found"].format(
+                ctx.author.mention, lang))
         try:
             await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
         except:
             pass
+
 
 def setup(bot):
     bot.add_cog(Help(bot))

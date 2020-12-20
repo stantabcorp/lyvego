@@ -1,3 +1,5 @@
+import abc
+from functools import update_wrapper
 import json
 import logging
 import os
@@ -7,6 +9,7 @@ import uuid
 import aiomysql
 import discord
 from aiohttp import ClientSession
+from discord.activity import Activity
 from discord.ext import commands
 from discord.ext.commands import when_mentioned_or
 
@@ -199,6 +202,22 @@ class Lyvego(commands.AutoShardedBot, Pool):
         for file in os.listdir("locales/"):
             with open(f"locales/{file}", "r") as f:
                 self.locales[file[:2]] = json.load(f)
+
+    async def update_role(self, member: discord.Member, is_adding):
+        role_name = await self.get_server_role_activity(member.guild.id)
+        role = discord.utils.get(member.guild.roles, name=role_name)
+        if role != None:
+            if is_adding:
+                await member.add_roles(role, reason="Start Streaming")
+            elif not is_adding:
+                await member.remove_roles(role, reason="Stop Streaming")
+
+    async def on_member_update(self, before: discord.Member, after: discord.Member):
+        print(before.name, before.activities, after.activities)
+        if discord.ActivityType.streaming == after.activities[0] and before.activities[0] != after.activities[0]:
+            await self.update_role(after, True)
+        elif discord.ActivityType.streaming == before.activities[0] and before.activities[0] != after.activities[0]:
+            await self.update_role(after, False)
 
     async def on_ready(self):
 
