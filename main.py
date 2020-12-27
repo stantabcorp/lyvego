@@ -1,15 +1,16 @@
 import abc
-from functools import update_wrapper
+import asyncio
 import json
 import logging
 import os
 import sys
-from typing import Optional
 import uuid
+from functools import update_wrapper
+from typing import Optional
+
 import aiomysql
 import discord
 from aiohttp import ClientSession
-from discord.activity import Activity
 from discord.ext import commands
 from discord.ext.commands import when_mentioned_or
 
@@ -20,16 +21,15 @@ from src.utils import dctt
 logger = logging.getLogger("lyvego")
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(
-        filename='lyvego.log',
-        encoding='utf-8',
-        mode='w'
-    )
+    filename='lyvego.log',
+    encoding='utf-8',
+    mode='w'
+)
 handler.setFormatter(logging.Formatter(
-        '%(asctime)s:%(levelname)s:%(name)s: %(message)s'
-        )
-    )
+    '%(asctime)s:%(levelname)s:%(name)s: %(message)s'
+)
+)
 logger.addHandler(handler)
-
 
 
 class Lyvego(commands.AutoShardedBot, Pool):
@@ -44,6 +44,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
         "locales",
         "lyvego_url"
     )
+
     def __init__(self):
         super().__init__(
             command_prefix=self._get_prefix,
@@ -67,7 +68,6 @@ class Lyvego(commands.AutoShardedBot, Pool):
         self.remove_command("help")
         self.loader()
 
-
     async def _get_prefix(self, bot, message):
         try:
             prefix = await self.getg_prefix(message.guild.id)
@@ -75,7 +75,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
             prefix = "!!"
         return when_mentioned_or(prefix)(bot, message)
 
-    def loader(self, reloading: Optional[bool]=False):
+    def loader(self, reloading: Optional[bool] = False):
         for file in os.listdir("cogs/"):
             try:
                 if file.endswith(".py"):
@@ -230,15 +230,15 @@ class Lyvego(commands.AutoShardedBot, Pool):
             if self.pool is None:
                 try:
                     self.pool = await aiomysql.create_pool(
-                            host=HOST,
-                            port=PORT,
-                            user=USER,
-                            password=PASSWORD,
-                            db=USER,
-                            loop=self.loop,
-                            maxsize=10,
-                            autocommit=True
-                        )
+                        host=HOST,
+                        port=PORT,
+                        user=USER,
+                        password=PASSWORD,
+                        db=USER,
+                        loop=self.loop,
+                        maxsize=10,
+                        autocommit=True
+                    )
                     self.loop.create_task(self._verify_servers())
                     # await self.clean_all()
                     logger.info("Guilds verified")
@@ -273,7 +273,20 @@ class Lyvego(commands.AutoShardedBot, Pool):
         except KeyboardInterrupt:
             self._exit()
 
+    # async def run(self, token, *args, **kwargs):
+    #     try:
+    #         await self.start(token, *args, **kwargs)
+    #     except KeyboardInterrupt:
+    #         self._exit()
+
+
+def multi_tokens_runner(loop: asyncio.AbstractEventLoop, bot: Lyvego, *tokens):
+    for token in tokens:
+        loop.create_task(bot.run(token, reconnect=True))
+        logger.info(f"BOT {token} is now running")
+
 
 if __name__ == "__main__":
+    # loop = asyncio.get_event_loop()
     bot = Lyvego()
     bot.run(TOKEN, reconnect=True)
