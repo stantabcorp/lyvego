@@ -225,12 +225,15 @@ class Receiver(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def events(self, ctx):
-        embed = discord.Embed(title="Events informations")
+        embed = discord.Embed(
+            title="Events informations",
+            color=self.bot.color,
+            timestamp=dctt()
+        )
         embed.add_field(name="Last live", value=self._last_live)
         embed.add_field(name="Last clip", value=self._last_clip)
         embed.add_field(name="Last follow", value=self._last_follow)
         await ctx.send(embed=embed)
-        # await ctx.send("Last live : **{0._last_live}** --- Last follow : **{0._last_follow}** --- Last clip : **{0._last_clip}**".format(self))
 
     @commands.command(aliases=["sr"])
     @commands.guild_only()
@@ -238,6 +241,50 @@ class Receiver(commands.Cog):
     async def setrole(self, ctx, role: discord.Role):
         await self.bot.insert_server_role_activity(ctx.guild.id, role.id)
         await ctx.send(f"{role.name} successfully added")
+
+    @commands.command()
+    @commands.is_owner()
+    async def presence(self, ctx, status_type, activity_type, *, msg):
+        if not status_type and not activity_type:
+            return await ctx.send("Status type choice : **[online, offline, dnd, idle, invisible]**\n Activity type : **[watching, playing, listening, competing, custom]**")
+
+        if status_type == "online":
+            status_type = discord.Status.online
+        elif status_type == "offline":
+            status_type = discord.Status.offline
+        elif status_type == "dnd":
+            status_type = discord.Status.dnd
+        elif status_type == "idle":
+            status_type = discord.Status.idle
+        elif status_type == "invisible":
+            status_type = discord.Status.invisible
+        else:
+            status_type = discord.Status.online
+
+        if activity_type == "watching":
+            activity_type = discord.ActivityType.watching
+        elif activity_type == "playing":
+            activity_type = discord.ActivityType.playing
+        elif activity_type == "listening":
+            activity_type = discord.ActivityType.listening
+        elif activity_type == "competing":
+            activity_type = discord.ActivityType.competing
+        elif activity_type == "custom":
+            activity_type = discord.ActivityType.custom
+        else:
+            activity_type = discord.ActivityType.watching
+
+        try:
+            await self.bot.change_presence(
+                activity=discord.Activity(
+                    name=msg,
+                    type=activity_type
+                ),
+                status=status_type
+            )
+            await ctx.send(f"Presence changed - {status_type} - {activity_type}")
+        except Exception as e:
+            await ctx.send(f"{type(e).__name__} :  {e}")
 
 
 def setup(bot):
