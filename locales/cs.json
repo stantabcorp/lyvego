@@ -34,12 +34,12 @@
     "field_value_clipper": "Uživatel, který vytvořil klip",
 
     "message_started_following": "{follower} právě začal sledovat {followed}.",
-    "message_stream_live": "Ahoj {streamer} právě začal vysílat hru {game} ! Běžte se podívat {link}",
+    "message_stream_live": "Ahoj {streamer} právě začal vysílat {game}! Běžte se podívat {link}",
 
     "new_language": "{0} Nový jazyk : `{1}`",
     "available_languages": "Dostupné jazyky :\n{0}",
 
-    "error_amount_topclips": "Maximální množství nejsledovanějších klipů je 100 !",
+    "error_amount_topclips": "Maximální množství nejsledovanějších klipů je 100!",
     "error_ratelimited": "{0} Tento příkaz má rate limit, prosím, zkuste znovu za {1:.2f}s",
     "error_missing_manages_permissions": "{0} Pokud chcete použít všechny funkce, měli byste botovi udělit oprávnění `Zpráva zpráv`.",
     "error_language_not_found": "{0} Omlouváme se, jazyk `{1}` ještě není implementován, nebo neexistuje.",
