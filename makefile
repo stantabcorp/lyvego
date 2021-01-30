@@ -5,4 +5,4 @@ update:
 upgrade:
 	$(CC) $(pip) -r requirements.txt --upgrade
 install:
-	apt install python3 && apt isntall python3-pip
+	apt install python3 && apt install python3-pip

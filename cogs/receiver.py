@@ -7,6 +7,7 @@ from collections import namedtuple
 import discord
 from aiohttp import web
 from discord.ext import commands
+
 from src.constants import API_KEY
 from src.utils import dctt
 
@@ -14,7 +15,7 @@ logger = logging.getLogger("lyvego")
 
 
 class Receiver(commands.Cog):
-    __slots__ = ("bot", "_last_follow", "_last_live", "_last_clip")
+    __slots__ = ("bot", "_last_follow", "_last_live", "_last_clip", "_nb_req")
 
     def __init__(self, bot):
         self.bot = bot
@@ -22,6 +23,7 @@ class Receiver(commands.Cog):
         self._last_follow = None
         self._last_live = None
         self._last_clip = None
+        self._nb_req = 0
 
     def on_live_embed(self, em, guild: discord.Guild):
         embed = discord.Embed(
@@ -182,16 +184,19 @@ class Receiver(commands.Cog):
             event_type = events[0].type
             if event_type == "stream":
                 self._last_live = dt.datetime.now()
+                self._nb_req += 1
                 await self._stream_event(events)
             # elif event_type == "moderator":
             #     await self._moderator_event(events)
             elif event_type == "follow":
                 self._last_follow = dt.datetime.now()
+                self._nb_req += 1
                 await self._follow_event(events)
             # elif event_type == "ban":
             #     await self._ban_event(events)
             elif event_type == "clip":
                 self._last_clip = dt.datetime.now()
+                self._nb_req += 1
                 await self._clips_event(events)
 
             return web.Response()
@@ -245,8 +250,9 @@ class Receiver(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def presence(self, ctx, status_type, activity_type, *, msg):
-        if not status_type and not activity_type:
-            return await ctx.send("Status type choice : **[online, offline, dnd, idle, invisible]**\n Activity type : **[watching, playing, listening, competing, custom]**")
+        if status_type == "help":
+            return await ctx.send(
+                "Status type choice : **[online, offline, dnd, idle, invisible]**\n Activity type : **[watching, playing, listening, competing, custom]**")
 
         if status_type == "online":
             status_type = discord.Status.online
@@ -285,6 +291,11 @@ class Receiver(commands.Cog):
             await ctx.send(f"Presence changed - {status_type} - {activity_type}")
         except Exception as e:
             await ctx.send(f"{type(e).__name__} :  {e}")
+
+    @commands.command(aliases=["req", "requetes"])
+    @commands.is_owner()
+    async def requete(self, ctx):
+        await ctx.send(f"Nb requetes : {self._nb_req} depuis {self.bot.start_time}")
 
 
 def setup(bot):

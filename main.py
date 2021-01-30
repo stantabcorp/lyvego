@@ -1,11 +1,9 @@
-import abc
 import asyncio
 import json
 import logging
-import os
 import sys
 import uuid
-from functools import update_wrapper
+from datetime import datetime
 from typing import Optional
 
 import aiomysql
@@ -42,7 +40,8 @@ class Lyvego(commands.AutoShardedBot, Pool):
         "color",
         "color_str",
         "locales",
-        "lyvego_url"
+        "lyvego_url",
+        "start_time"
     )
 
     def __init__(self):
@@ -62,6 +61,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
         self.blue = 0x158ed4
         self.color = 0x6441a5
         self.color_str = str(hex(self.color))[2:]
+        self.start_time = datetime.utcnow()
         self.locales = {}
         self.lyvego_url = "https://lyvego.com"
         self.load_locales()
@@ -213,7 +213,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
                 await member.remove_roles(role, reason="Stop Streaming")
 
     async def on_member_update(self, before: discord.Member, after: discord.Member):
-        print(before.name, before.activities, after.activities)
+        # print(before.name, before.activities, after.activities)
         if discord.ActivityType.streaming == after.activities[0] and before.activities[0] != after.activities[0]:
             await self.update_role(after, True)
         elif discord.ActivityType.streaming == before.activities[0] and before.activities[0] != after.activities[0]:
@@ -239,9 +239,9 @@ class Lyvego(commands.AutoShardedBot, Pool):
                         maxsize=10,
                         autocommit=True
                     )
-                    self.loop.create_task(self._verify_servers())
+                    # self.loop.create_task(self._verify_servers()) TODO : make more secure way to verify guilds
                     # await self.clean_all()
-                    logger.info("Guilds verified")
+                    logger.info("Pool created")
                 except Exception as e:
                     logger.exception(e, exc_info=True)
 
@@ -287,6 +287,17 @@ def multi_tokens_runner(loop: asyncio.AbstractEventLoop, bot: Lyvego, *tokens):
 
 
 if __name__ == "__main__":
-    # loop = asyncio.get_event_loop()
+    try:
+        # Debugger
+        import sentry_sdk
+        from sentry_sdk.integrations.aiohttp import AioHttpIntegration
+
+        sentry_sdk.init(
+            SENTRY_TOKEN,
+            traces_sample_rate=1.0,
+            integrations=[AioHttpIntegration()]
+        )
+    except Exception as e:
+        logger.exception(e, exc_info=True)
     bot = Lyvego()
     bot.run(TOKEN, reconnect=True)

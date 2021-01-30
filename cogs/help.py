@@ -3,6 +3,7 @@ import logging
 
 import discord
 from discord.ext import commands
+
 from errors import LanguageNotFound
 from src.utils import dctt
 
@@ -102,19 +103,24 @@ class Help(commands.Cog):
                     icon_url=ctx.me.avatar_url
                 )
                 embed.add_field(
-                    name=f"{ctx.prefix}stream <streamer_name>",
+                    name=f"{ctx.prefix}stream <streamer_name> [message : Optional]",
                     value=self.bot.locales[lang]["help_streamer"],
                     inline=False
                 )
                 embed.add_field(
-                    name=f"{ctx.prefix}follow <streamer_name>",
+                    name=f"{ctx.prefix}follow <streamer_name> [message : Optional]",
                     value=self.bot.locales[lang]["help_follow"],
                     inline=False
                 )
 
                 embed.add_field(
-                    name=f"{ctx.prefix}clips <streamer_name>",
+                    name=f"{ctx.prefix}clips <streamer_name> [message : Optional]",
                     value=self.bot.locales[lang]["help_clips"],
+                    inline=False
+                )
+                embed.add_field(
+                    name=f"{ctx.prefix}remove <follow | stream | clips> <streamer_name>",
+                    value=self.bot.locales[lang]["help_remove"],
                     inline=False
                 )
 
