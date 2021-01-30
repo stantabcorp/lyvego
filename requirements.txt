@@ -1,5 +1,7 @@
-git+https://github.com/Rapptz/discord.py@sharding-rework
+git+https://github.com/Rapptz/discord.py
 aiofiles
-aiohttp
+aiohttp~=3.7.3
 dblpy
-aiomysql
+aiomysql~=0.0.21
+aiocontextvars
+sentry-sdk

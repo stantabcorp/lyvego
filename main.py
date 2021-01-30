@@ -1,9 +1,11 @@
+import asyncio
 import json
 import logging
-import os
 import sys
-from typing import Optional
 import uuid
+from datetime import datetime
+from typing import Optional
+
 import aiomysql
 import discord
 from aiohttp import ClientSession
@@ -17,16 +19,15 @@ from src.utils import dctt
 logger = logging.getLogger("lyvego")
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(
-        filename='lyvego.log',
-        encoding='utf-8',
-        mode='w'
-    )
+    filename='lyvego.log',
+    encoding='utf-8',
+    mode='w'
+)
 handler.setFormatter(logging.Formatter(
-        '%(asctime)s:%(levelname)s:%(name)s: %(message)s'
-        )
-    )
+    '%(asctime)s:%(levelname)s:%(name)s: %(message)s'
+)
+)
 logger.addHandler(handler)
-
 
 
 class Lyvego(commands.AutoShardedBot, Pool):
@@ -39,8 +40,10 @@ class Lyvego(commands.AutoShardedBot, Pool):
         "color",
         "color_str",
         "locales",
-        "lyvego_url"
+        "lyvego_url",
+        "start_time"
     )
+
     def __init__(self):
         super().__init__(
             command_prefix=self._get_prefix,
@@ -58,12 +61,12 @@ class Lyvego(commands.AutoShardedBot, Pool):
         self.blue = 0x158ed4
         self.color = 0x6441a5
         self.color_str = str(hex(self.color))[2:]
+        self.start_time = datetime.utcnow()
         self.locales = {}
         self.lyvego_url = "https://lyvego.com"
         self.load_locales()
         self.remove_command("help")
         self.loader()
-
 
     async def _get_prefix(self, bot, message):
         try:
@@ -72,7 +75,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
             prefix = "!!"
         return when_mentioned_or(prefix)(bot, message)
 
-    def loader(self, reloading: Optional[bool]=False):
+    def loader(self, reloading: Optional[bool] = False):
         for file in os.listdir("cogs/"):
             try:
                 if file.endswith(".py"):
@@ -200,6 +203,22 @@ class Lyvego(commands.AutoShardedBot, Pool):
             with open(f"locales/{file}", "r") as f:
                 self.locales[file[:2]] = json.load(f)
 
+    async def update_role(self, member: discord.Member, is_adding):
+        role_id = await self.get_server_role_activity(member.guild.id)
+        role = discord.utils.get(member.guild.roles, id=role_id)
+        if role != None:
+            if is_adding:
+                await member.add_roles(role, reason="Start Streaming")
+            elif not is_adding:
+                await member.remove_roles(role, reason="Stop Streaming")
+
+    async def on_member_update(self, before: discord.Member, after: discord.Member):
+        # print(before.name, before.activities, after.activities)
+        if discord.ActivityType.streaming == after.activities[0] and before.activities[0] != after.activities[0]:
+            await self.update_role(after, True)
+        elif discord.ActivityType.streaming == before.activities[0] and before.activities[0] != after.activities[0]:
+            await self.update_role(after, False)
+
     async def on_ready(self):
 
         if self.http_session is None:
@@ -211,18 +230,18 @@ class Lyvego(commands.AutoShardedBot, Pool):
             if self.pool is None:
                 try:
                     self.pool = await aiomysql.create_pool(
-                            host=HOST,
-                            port=PORT,
-                            user=USER,
-                            password=PASSWORD,
-                            db=USER,
-                            loop=self.loop,
-                            maxsize=10,
-                            autocommit=True
-                        )
-                    self.loop.create_task(self._verify_servers())
+                        host=HOST,
+                        port=PORT,
+                        user=USER,
+                        password=PASSWORD,
+                        db=USER,
+                        loop=self.loop,
+                        maxsize=10,
+                        autocommit=True
+                    )
+                    # self.loop.create_task(self._verify_servers()) TODO : make more secure way to verify guilds
                     # await self.clean_all()
-                    logger.info("Guilds verified")
+                    logger.info("Pool created")
                 except Exception as e:
                     logger.exception(e, exc_info=True)
 
@@ -254,7 +273,31 @@ class Lyvego(commands.AutoShardedBot, Pool):
         except KeyboardInterrupt:
             self._exit()
 
+    # async def run(self, token, *args, **kwargs):
+    #     try:
+    #         await self.start(token, *args, **kwargs)
+    #     except KeyboardInterrupt:
+    #         self._exit()
+
+
+def multi_tokens_runner(loop: asyncio.AbstractEventLoop, bot: Lyvego, *tokens):
+    for token in tokens:
+        loop.create_task(bot.run(token, reconnect=True))
+        logger.info(f"BOT {token} is now running")
+
 
 if __name__ == "__main__":
+    try:
+        # Debugger
+        import sentry_sdk
+        from sentry_sdk.integrations.aiohttp import AioHttpIntegration
+
+        sentry_sdk.init(
+            SENTRY_TOKEN,
+            traces_sample_rate=1.0,
+            integrations=[AioHttpIntegration()]
+        )
+    except Exception as e:
+        logger.exception(e, exc_info=True)
     bot = Lyvego()
     bot.run(TOKEN, reconnect=True)

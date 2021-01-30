@@ -1,16 +1,14 @@
 import asyncio
-import datetime
-import logging
 import os
 
 import dbl
-import discord
 from discord.ext import commands
 
 
 class TopGG(commands.Cog):
     """Handles interactions with the top.gg API"""
     __slots__ = ("bot", "token", "dblpy")
+
     def __init__(self, bot):
         self.bot = bot
         self.token = os.environ["DBL_TOKEN"]
@@ -24,6 +22,7 @@ class TopGG(commands.Cog):
             except Exception as e:
                 pass
             await asyncio.sleep(900)
+
 
 def setup(bot):
     bot.add_cog(TopGG(bot))
