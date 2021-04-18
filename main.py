@@ -16,6 +16,8 @@ from src.constants import *
 from src.db import Pool
 from src.utils import dctt
 
+MAX_RETRIES = 10
+
 logger = logging.getLogger("lyvego")
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(
@@ -89,7 +91,9 @@ class Lyvego(commands.AutoShardedBot, Pool):
 
     async def on_guild_join(self, guild: discord.Guild):
         try:
-            await self.http_session.request(
+            acc = 0
+            backoff_time = 2
+            r = await self.http_session.request(
                 method="POST",
                 url="https://api.lyvego.com/v1/bot/server",
                 headers={"Authorization": AUTHORIZATION},
@@ -101,8 +105,24 @@ class Lyvego(commands.AutoShardedBot, Pool):
                     "region": guild.region.name
                 }
             )
-        except Exception as e:
-            logger.exception(e, exc_info=True)
+            while r.status not in range(200, 300) and acc < MAX_RETRIES:
+                r = await self.http_session.request(
+                    method="POST",
+                    url="https://api.lyvego.com/v1/bot/server",
+                    headers={"Authorization": AUTHORIZATION},
+                    json={
+                        "discord_id": guild.id,
+                        "owner_id": guild.owner_id,
+                        "name": guild.name,
+                        "icon": guild.icon_url._url,
+                        "region": guild.region.name
+                    }
+                )
+                await asyncio.sleep(backoff_time)
+                backoff_time *= 1.12
+                acc += 1
+        except:
+            print(f"{guild.name} cannot be added to the DB", file=sys.stderr)
 
         chan_logger = self.get_channel(739633667906732143)
         embed = discord.Embed(
@@ -161,11 +181,11 @@ class Lyvego(commands.AutoShardedBot, Pool):
 
     async def _verify_servers(self):
         servers = await self.get_guilds_registered()
-        try:
-            with open(f"save_bdd-{uuid.uuid4()}.json", 'w', encoding='utf-8') as f:
-                f.write(str(servers))
-        except:
-            pass
+        # try:
+        #     with open(f"save_bdd-{uuid.uuid4()}.json", 'w', encoding='utf-8') as f:
+        #         f.write(str(servers))
+        # except:
+        #     pass
         bot_guilds_ids = []
         for bguild in self.guilds:
             bot_guilds_ids.append(str(bguild.id))
@@ -184,19 +204,20 @@ class Lyvego(commands.AutoShardedBot, Pool):
                         }
                     )
                     logger.info(f"{bguild.id} added by verifier")
-                except Exception as e:
-                    logger.exception(e, exc_info=True)
-        for bdsid in servers:
-            if not self._value_exist(bot_guilds_ids, bdsid):
-                try:
-                    await self.http_session.request(
-                        method="DELETE",
-                        url=f"{API_ROOT}bot/server/{bdsid}",
-                        headers={"Authorization": AUTHORIZATION}
-                    )
-                    logger.info(f"{bdsid} removed by verifier")
-                except Exception as e:
-                    logger.exception(e, exc_info=True)
+                    await asyncio.sleep(.5)
+                except:
+                    pass
+        # for bdsid in servers:
+        #     if not self._value_exist(bot_guilds_ids, bdsid):
+        #         try:
+        #             await self.http_session.request(
+        #                 method="DELETE",
+        #                 url=f"{API_ROOT}bot/server/{bdsid}",
+        #                 headers={"Authorization": AUTHORIZATION}
+        #             )
+        #             logger.info(f"{bdsid} removed by verifier")
+        #         except Exception as e:
+        #             logger.exception(e, exc_info=True)
 
     def load_locales(self):
         for file in os.listdir("locales/"):
@@ -212,12 +233,12 @@ class Lyvego(commands.AutoShardedBot, Pool):
             elif not is_adding:
                 await member.remove_roles(role, reason="Stop Streaming")
 
-    async def on_member_update(self, before: discord.Member, after: discord.Member):
+    # async def on_member_update(self, before: discord.Member, after: discord.Member):
         # print(before.name, before.activities, after.activities)
-        if discord.ActivityType.streaming == after.activities[0] and before.activities[0] != after.activities[0]:
-            await self.update_role(after, True)
-        elif discord.ActivityType.streaming == before.activities[0] and before.activities[0] != after.activities[0]:
-            await self.update_role(after, False)
+        # if discord.ActivityType.streaming == after.activities[0] and before.activities[0] != after.activities[0]:
+        #     await self.update_role(after, True)
+        # elif discord.ActivityType.streaming == before.activities[0] and before.activities[0] != after.activities[0]:
+        #     await self.update_role(after, False)
 
     async def on_ready(self):
 

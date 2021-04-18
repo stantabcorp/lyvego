@@ -1,7 +1,6 @@
 git+https://github.com/Rapptz/discord.py
 aiofiles
-aiohttp~=3.7.3
 dblpy
-aiomysql~=0.0.21
+aiomysql
 aiocontextvars
 sentry-sdk
