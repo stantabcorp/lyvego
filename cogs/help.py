@@ -285,7 +285,7 @@ class Help(commands.Cog):
         )
         embed.add_field(
             name="💗 Hearthbeat",
-            value=f"`{self.bot.latencies[ctx.guild.shard_id][1]:.3f}` ms"
+            value=f"`{sum([x[1] for x in self.bot.latencies]) / self.bot.shard_count:.3f}` ms"
         )
         embed.set_footer(
             text="lyvego.com"

@@ -1,8 +1,8 @@
 import asyncio
 import logging
-import math
 
 import discord
+import math
 
 import errors
 from src import *

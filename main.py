@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 import sys
-import uuid
 from datetime import datetime
 from typing import Optional
 
@@ -187,10 +186,13 @@ class Lyvego(commands.AutoShardedBot, Pool):
         # except:
         #     pass
         bot_guilds_ids = []
+        acc_removed = 0
+        acc_added = 0
         for bguild in self.guilds:
             bot_guilds_ids.append(str(bguild.id))
             if not self._value_exist(servers, str(bguild.id)):
                 try:
+                    acc_added += 1
                     await self.http_session.request(
                         method="POST",
                         url=f"{API_ROOT}bot/server",
@@ -205,19 +207,22 @@ class Lyvego(commands.AutoShardedBot, Pool):
                     )
                     logger.info(f"{bguild.id} added by verifier")
                     await asyncio.sleep(.5)
-                except:
-                    pass
-        # for bdsid in servers:
-        #     if not self._value_exist(bot_guilds_ids, bdsid):
-        #         try:
-        #             await self.http_session.request(
-        #                 method="DELETE",
-        #                 url=f"{API_ROOT}bot/server/{bdsid}",
-        #                 headers={"Authorization": AUTHORIZATION}
-        #             )
-        #             logger.info(f"{bdsid} removed by verifier")
-        #         except Exception as e:
-        #             logger.exception(e, exc_info=True)
+                except Exception as e:
+                    logger.exception(e, exc_info=True)
+        for bdsid in servers:
+            if not self._value_exist(bot_guilds_ids, bdsid):
+                try:
+                    acc_removed += 1
+                    # await self.http_session.request(
+                    #     method="DELETE",
+                    #     url=f"{API_ROOT}bot/server/{bdsid}",
+                    #     headers={"Authorization": AUTHORIZATION}
+                    # )
+                    # logger.info(f"{bdsid} removed by verifier")
+                except Exception as e:
+                    logger.exception(e, exc_info=True)
+        logger.info(
+            f"{acc_removed} / {len(self.guilds)} should be REMOVED and {acc_added} / {len(self.guilds)} should be ADDED")
 
     def load_locales(self):
         for file in os.listdir("locales/"):
@@ -234,11 +239,11 @@ class Lyvego(commands.AutoShardedBot, Pool):
                 await member.remove_roles(role, reason="Stop Streaming")
 
     # async def on_member_update(self, before: discord.Member, after: discord.Member):
-        # print(before.name, before.activities, after.activities)
-        # if discord.ActivityType.streaming == after.activities[0] and before.activities[0] != after.activities[0]:
-        #     await self.update_role(after, True)
-        # elif discord.ActivityType.streaming == before.activities[0] and before.activities[0] != after.activities[0]:
-        #     await self.update_role(after, False)
+    # print(before.name, before.activities, after.activities)
+    # if discord.ActivityType.streaming == after.activities[0] and before.activities[0] != after.activities[0]:
+    #     await self.update_role(after, True)
+    # elif discord.ActivityType.streaming == before.activities[0] and before.activities[0] != after.activities[0]:
+    #     await self.update_role(after, False)
 
     async def on_ready(self):
 
@@ -260,8 +265,8 @@ class Lyvego(commands.AutoShardedBot, Pool):
                         maxsize=10,
                         autocommit=True
                     )
-                    # self.loop.create_task(self._verify_servers()) TODO : make more secure way to verify guilds
-                    # await self.clean_all()
+                    # TODO : make more secure way to verify guilds
+                    self.loop.create_task(self._verify_servers())
                     logger.info("Pool created")
                 except Exception as e:
                     logger.exception(e, exc_info=True)
