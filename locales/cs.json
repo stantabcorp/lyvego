@@ -34,6 +34,8 @@
   "message_stream_live": "Ahoj {streamer} právě začal vysílat {game}! Běžte se podívat {link}",
   "new_language": "{0} Nový jazyk : `{1}`",
   "available_languages": "Dostupné jazyky :\n{0}",
+  "activity_start_streaming": "Start Streaming",
+  "activity_stop_streaming": "Stop Streaming",
   "error_amount_topclips": "Maximální množství nejsledovanějších klipů je 100!",
   "error_ratelimited": "{0} Tento příkaz má rate limit, prosím, zkuste znovu za {1:.2f}s",
   "error_missing_manages_permissions": "{0} Pokud chcete použít všechny funkce, měli byste botovi udělit oprávnění `Zpráva zpráv`.",

@@ -6,7 +6,7 @@ from discord.ext import commands
 
 from errors import LanguageNotFound
 from src.utils import dctt
-
+import src.commands as bot_commands
 logger = logging.getLogger("lyvego")
 
 
@@ -20,173 +20,7 @@ class Help(commands.Cog):
     @commands.command(name="help", aliases=["h"])
     @commands.bot_has_permissions(manage_messages=True)
     async def help(self, ctx: commands.Context):
-        lang = await self.bot.getg_lang(ctx.guild.id)
-        react_list = ["<:lyvego:703585626053673060>",
-                      "<:twitch:703585214261231626>", "⚙️"]
-        embed = discord.Embed(
-            color=self.bot.color,
-            description=self.bot.locales[lang]["help_description_header"],
-            timestamp=dctt()
-        )
-        embed.set_author(
-            name=self.bot.locales[lang]["author_name_commands"],
-            icon_url=ctx.me.avatar_url
-        )
-        embed.add_field(
-            name=self.bot.locales[lang]["help_hub_twitch"].format(
-                react_list[1]),
-            value=self.bot.locales[lang]["help_hub_tap_to_see"].format(
-                react_list[1]),
-            inline=False
-        )
-        embed.add_field(
-            name=self.bot.locales[lang]["help_hub_settings"].format(
-                react_list[2]),
-            value=self.bot.locales[lang]["help_hub_tap_to_see"].format(
-                react_list[2]),
-            inline=False
-        )
-        embed.set_footer(
-            text="lyvego.com | help pages deleted in 5 mins",
-            icon_url=ctx.me.avatar_url
-        )
-        pages = await ctx.send(embed=embed)
-
-        for reaction in react_list:
-            await pages.add_reaction(reaction)
-
-        def predicate(reaction, user):
-            return user == ctx.message.author and str(reaction.emoji) in react_list
-
-        while True:
-            try:
-                reaction, user = await self.bot.wait_for('reaction_add', check=predicate, timeout=300.0)
-            except asyncio.TimeoutError:
-                try:
-                    await ctx.message.delete()
-                except:
-                    pass
-                await pages.delete()
-                return
-
-            if react_list[0] == str(reaction.emoji):
-                embed = discord.Embed(
-                    color=self.bot.color,
-                    description=self.bot.locales[lang]["help_description_header"],
-                    timestamp=dctt()
-                )
-                embed.set_author(
-                    name=self.bot.locales[lang]["author_name_commands"],
-                    icon_url=ctx.me.avatar_url
-                )
-                embed.add_field(
-                    name=self.bot.locales[lang]["help_hub_twitch"].format(
-                        react_list[1]),
-                    value=self.bot.locales[lang]["help_hub_tap_to_see"].format(
-                        react_list[1]),
-                    inline=False
-                )
-                embed.add_field(
-                    name=self.bot.locales[lang]["help_hub_twitch"].format(
-                        react_list[2]),
-                    value=self.bot.locales[lang]["help_hub_tap_to_see"].format(
-                        react_list[2]),
-                    inline=False
-                )
-            elif react_list[1] == str(reaction.emoji):
-                embed = discord.Embed(
-                    timestamp=dctt(),
-                    color=self.bot.color,
-                )
-                embed.set_author(
-                    name=self.bot.locales[lang]["paginated_author_twitch_commands"],
-                    icon_url=ctx.me.avatar_url
-                )
-                embed.add_field(
-                    name=f"{ctx.prefix}stream <streamer_name> [message : Optional]",
-                    value=self.bot.locales[lang]["help_streamer"],
-                    inline=False
-                )
-                embed.add_field(
-                    name=f"{ctx.prefix}follow <streamer_name> [message : Optional]",
-                    value=self.bot.locales[lang]["help_follow"],
-                    inline=False
-                )
-
-                embed.add_field(
-                    name=f"{ctx.prefix}clips <streamer_name> [message : Optional]",
-                    value=self.bot.locales[lang]["help_clips"],
-                    inline=False
-                )
-                embed.add_field(
-                    name=f"{ctx.prefix}remove <follow | stream | clips> <streamer_name>",
-                    value=self.bot.locales[lang]["help_remove"],
-                    inline=False
-                )
-
-                embed.add_field(
-                    name=f"{ctx.prefix}topclip <streamer_name> [amount]",
-                    value=self.bot.locales[lang]["help_topclip"],
-                    inline=False
-                )
-
-            elif react_list[2] == reaction.emoji:
-                embed = discord.Embed(
-                    timestamp=dctt(),
-                    color=self.bot.color
-                )
-                embed.set_author(
-                    name=self.bot.locales[lang]["paginated_author_settings_commands"],
-                    icon_url=ctx.me.avatar_url
-                )
-                embed.add_field(
-                    name=f"{ctx.prefix}setprefix <new_prefix>",
-                    value=self.bot.locales[lang]["help_prefix"],
-                    inline=False
-                )
-                embed.add_field(
-                    name=f"{ctx.prefix}getprefix",
-                    value=self.bot.locales[lang]["help_getprefix"],
-                    inline=False
-                )
-                embed.add_field(
-                    name=f"{ctx.prefix}lang <--list | new_language>",
-                    value=self.bot.locales[lang]["help_language"].format(
-                        ", ".join([x.upper() for x in self.bot.locales]).rstrip(", ")),
-                    inline=False
-                )
-                embed.add_field(
-                    name=f"{ctx.prefix}invite",
-                    value=self.bot.locales[lang]["help_invite"],
-                    inline=False
-                )
-                embed.add_field(
-                    name=f"{ctx.prefix}dashboard",
-                    value=self.bot.locales[lang]["help_dashboard"],
-                    inline=False
-                )
-                embed.add_field(
-                    name=f"{ctx.prefix}ping",
-                    value=self.bot.locales[lang]["help_ping"],
-                    inline=False
-                )
-                embed.add_field(
-                    name=f"{ctx.prefix}vote",
-                    value=self.bot.locales[lang]["help_vote"],
-                    inline=False
-                )
-                embed.add_field(
-                    name=f"{ctx.prefix}about",
-                    value=self.bot.locales[lang]["help_about"],
-                    inline=False
-                )
-
-            embed.set_footer(
-                text="lyvego.com",
-                icon_url=ctx.me.avatar_url
-            )
-            await pages.remove_reaction(reaction.emoji, user)
-            await pages.edit(embed=embed)
+        await bot_commands.help_command(self.bot, ctx)
 
     @help.error
     async def help_error(self, ctx: commands.Context, error):
@@ -278,90 +112,19 @@ class Help(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx):
-        embed = discord.Embed(
-            timestamp=dctt(),
-            color=self.bot.color,
-            title="Bot latency"
-        )
-        embed.add_field(
-            name="💗 Hearthbeat",
-            value=f"`{sum([x[1] for x in self.bot.latencies]) / self.bot.shard_count:.3f}` ms"
-        )
-        embed.set_footer(
-            text="lyvego.com"
-        )
-        await ctx.send(embed=embed)
-        try:
-            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
-        except:
-            pass
+        await bot_commands.ping_command(self.bot, ctx)
 
     @commands.command()
     async def vote(self, ctx):
-        await ctx.send("https://top.gg/bot/702648685263323187/vote")
-        try:
-            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
-        except:
-            pass
+        await bot_commands.vote_command(ctx)
 
     @commands.command()
     async def about(self, ctx):
-        lang = await self.bot.getg_lang(str(ctx.guild.id))
-        embed = discord.Embed(
-            timestamp=dctt(),
-            color=self.bot.color,
-            description=self.bot.locales[lang]["about_description"]
-        )
-        nb_users = 0
-        channels = 0
-        for s in self.bot.guilds:
-            nb_users += len(s.members)
-            channels += len(s.channels)
-        embed.add_field(
-            name="Dashboard",
-            value="[lyvego.com](https://lyvego.com/)"
-        )
-        embed.add_field(
-            name="<:servers:693053697453850655> Servers",
-            value=len(self.bot.guilds))
-        embed.add_field(
-            name="<:users:693053423494365214> Members",
-            value=nb_users)
-        embed.add_field(
-            name="<:hashtag:693056105076621342> Channels",
-            value=channels)
-        embed.add_field(
-            name="<:stack:693054261512110091> Shards",
-            value=f"{ctx.guild.shard_id + 1}/{self.bot.shard_count}")
-        embed.add_field(
-            name="💗 Hearthbeat shards avg",
-            value=f"`{sum([x[1] for x in self.bot.latencies]) / self.bot.shard_count:.3f}` ms"
-        )
-        await ctx.send(embed=embed)
-        try:
-            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
-        except:
-            pass
+        await bot_commands.about_command(self.bot, ctx)
 
     @commands.command()
     async def invite(self, ctx: commands.Context):
-        lang = await self.bot.getg_lang(str(ctx.guild.id))
-        embed = discord.Embed(
-            title=self.bot.locales[lang]["title_invite_lyvego"],
-            description=self.bot.locales[lang]["description_invite_lyvego"].format(
-                "https://discord.com/oauth2/authorize?client_id=702648685263323187&permissions=445504&redirect_uri=https%3A%2F%2Flyvego.com%2Flogin&response_type=code&scope=bot%20identify%20email%20guilds"),
-            timestamp=dctt(),
-            color=self.bot.color
-        )
-        embed.set_footer(
-            text="lyvego.com",
-            icon_url=ctx.me.avatar_url
-        )
-        await ctx.send(embed=embed)
-        try:
-            await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
-        except:
-            pass
+        await bot_commands.invite_command(self.bot, ctx)
 
     # async def announce_owner_handler(self, user, embed):
     #     dm_notif = await user.send(embed=embed)

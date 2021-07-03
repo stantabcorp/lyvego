@@ -1,27 +1,30 @@
-import asyncio
-import os
+import logging
 
-import dbl
-from discord.ext import commands
+import topgg
+from discord.ext import commands, tasks
+
+from src.constants import TOPGG_API_KEY
+
+logger = logging.getLogger("covid-19")
 
 
 class TopGG(commands.Cog):
     """Handles interactions with the top.gg API"""
-    __slots__ = ("bot", "token", "dblpy")
+    __slots__ = ("bot", "topgg")
 
     def __init__(self, bot):
         self.bot = bot
-        self.token = os.environ["DBL_TOKEN"]
-        self.dblpy = dbl.DBLClient(self.bot, self.token, loop=self.bot.loop)
-        self.bot.loop.create_task(self.update_stats())
+        self.topgg = topgg.DBLClient(bot, TOPGG_API_KEY)
+        self.update_stats().start()
 
+    @tasks.loop(minutes=30, reconnect=True)
     async def update_stats(self):
-        while True:
-            try:
-                await self.dblpy.post_guild_count(shard_count=self.bot.shard_count)
-            except Exception as e:
-                pass
-            await asyncio.sleep(900)
+        """This function runs every 30 minutes to automatically update your server count."""
+        try:
+            await self.topgg.post_guild_count(shard_count=self.bot.shard_count)
+            logger.info(f"Posted server count ({self.topgg.guild_count})")
+        except Exception as e:
+            logger.error(f"Failed to post server count\n{e.__class__.__name__}: {e}")
 
 
 def setup(bot):

@@ -34,6 +34,8 @@
   "message_stream_live": "Hey {streamer} is live on {game}! Go check it out on {link}.",
   "new_language": "{0} New language : `{1}`",
   "available_languages": "Available languages :\n{0}",
+  "activity_start_streaming": "Start Streaming",
+  "activity_stop_streaming": "Stop Streaming",
   "error_amount_topclips": "Max amount for topclips is 100 !",
   "error_ratelimited": "{0} This command is ratelimited, please try again in {1:.2f}s",
   "error_missing_manages_permissions": "{0} If you want to be able to use all features you should give `Manage messages` permission to the bot.",

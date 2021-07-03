@@ -1,0 +1,7 @@
+version: "3.3"
+
+services:
+    lyvego-bot:
+        image: lyvego
+        build: .
+        command: python main.py

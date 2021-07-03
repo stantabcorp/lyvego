@@ -1,11 +1,17 @@
 import os
 
-HOST = os.environ["HOST"]
+from dotenv import load_dotenv
+
+load_dotenv()
+
+HOST = os.getenv("HOST")
 PORT = 3306
-USER = os.environ["USER"]
-PASSWORD = os.environ["PASSWORD"]
-API_KEY = os.environ["API_KEY"]
-AUTHORIZATION = os.environ["AUTHORIZATION"]
-TOKEN = os.environ["TOKEN"]
-API_ROOT = os.environ["API_ROOT"]
-SENTRY_TOKEN = os.environ["SENTRY_TOKEN"]
+USER = os.getenv("USER")
+PASSWORD = os.getenv("PASSWORD")
+API_KEY = os.getenv("API_KEY")
+AUTHORIZATION = os.getenv("AUTHORIZATION")
+TOKEN = os.getenv("TOKEN")
+TOKEN_DEBUG = os.getenv("TOKEN_DEBUG")
+API_ROOT = os.getenv("API_ROOT")
+SENTRY_TOKEN = os.getenv("SENTRY_TOKEN")
+TOPGG_API_KEY = os.getenv("TOPGG_API_KEY")

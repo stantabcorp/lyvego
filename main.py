@@ -33,6 +33,7 @@ logger.addHandler(handler)
 
 class Lyvego(commands.AutoShardedBot, Pool):
     __slots__ = (
+        "intents",
         "http_session",
         "pool",
         "red",
@@ -42,17 +43,21 @@ class Lyvego(commands.AutoShardedBot, Pool):
         "color_str",
         "locales",
         "lyvego_url",
-        "start_time"
+        "start_time",
+        "_debug"
     )
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        self.intents = discord.Intents(members=True, presences=True)
+        self._debug = kwargs.get("debug", False)
         super().__init__(
             command_prefix=self._get_prefix,
             case_insensitive=True,
             activity=discord.Game(
                 name="Starting..."
             ),
-            status=discord.Status.dnd
+            status=discord.Status.dnd,
+            intents=self.intents
         )
         super(Pool, self).__init__()
         self.http_session = None
@@ -67,7 +72,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
         self.lyvego_url = "https://lyvego.com"
         self.load_locales()
         self.remove_command("help")
-        self.loader()
+        self.load_cogs()
 
     async def _get_prefix(self, bot, message):
         try:
@@ -76,7 +81,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
             prefix = "!!"
         return when_mentioned_or(prefix)(bot, message)
 
-    def loader(self, reloading: Optional[bool] = False):
+    def load_cogs(self, reloading: Optional[bool] = False):
         for file in os.listdir("cogs/"):
             try:
                 if file.endswith(".py"):
@@ -180,11 +185,6 @@ class Lyvego(commands.AutoShardedBot, Pool):
 
     async def _verify_servers(self):
         servers = await self.get_guilds_registered()
-        # try:
-        #     with open(f"save_bdd-{uuid.uuid4()}.json", 'w', encoding='utf-8') as f:
-        #         f.write(str(servers))
-        # except:
-        #     pass
         bot_guilds_ids = []
         acc_removed = 0
         acc_added = 0
@@ -206,7 +206,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
                         }
                     )
                     logger.info(f"{bguild.id} added by verifier")
-                    await asyncio.sleep(.5)
+                    await asyncio.sleep(.4)
                 except Exception as e:
                     logger.exception(e, exc_info=True)
         for bdsid in servers:
@@ -221,6 +221,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
                     # logger.info(f"{bdsid} removed by verifier")
                 except Exception as e:
                     logger.exception(e, exc_info=True)
+        await asyncio.sleep(1)
         logger.info(
             f"{acc_removed} / {len(self.guilds)} should be REMOVED and {acc_added} / {len(self.guilds)} should be ADDED")
 
@@ -230,27 +231,25 @@ class Lyvego(commands.AutoShardedBot, Pool):
                 self.locales[file[:2]] = json.load(f)
 
     async def update_role(self, member: discord.Member, is_adding):
-        role_id = await self.get_server_role_activity(member.guild.id)
-        role = discord.utils.get(member.guild.roles, id=role_id)
+        role_name = await self.get_server_role_activity(member.guild.id)
+        role = discord.utils.get(member.guild.roles, name=role_name)
         if role != None:
             if is_adding:
-                await member.add_roles(role, reason="Start Streaming")
-            elif not is_adding:
-                await member.remove_roles(role, reason="Stop Streaming")
+                await member.add_roles(role, reason=self.locales["activity_start_streaming"])
+            else:
+                await member.remove_roles(role, reason=self.locales["activity_stop_streaming"])
 
-    # async def on_member_update(self, before: discord.Member, after: discord.Member):
-    # print(before.name, before.activities, after.activities)
-    # if discord.ActivityType.streaming == after.activities[0] and before.activities[0] != after.activities[0]:
-    #     await self.update_role(after, True)
-    # elif discord.ActivityType.streaming == before.activities[0] and before.activities[0] != after.activities[0]:
-    #     await self.update_role(after, False)
+    async def on_member_update(self, before: discord.Member, after: discord.Member):
+        print(before.name, before.activities, after.activities, sep="\n")
+        if discord.ActivityType.streaming is after.activity and before.activity is not after.activity:
+            await self.update_role(after, True)
+        elif discord.ActivityType.streaming is before.activity and before.activity is not after.activity:
+            await self.update_role(after, False)
 
-    async def on_ready(self):
-
+    async def startup_tasks(self):
         if self.http_session is None:
             # Create http session
             self.http_session = ClientSession(loop=self.loop)
-
         try:
             # Create pool
             if self.pool is None:
@@ -262,11 +261,10 @@ class Lyvego(commands.AutoShardedBot, Pool):
                         password=PASSWORD,
                         db=USER,
                         loop=self.loop,
-                        maxsize=10,
                         autocommit=True
                     )
                     # TODO : make more secure way to verify guilds
-                    self.loop.create_task(self._verify_servers())
+                    # self.loop.create_task(self._verify_servers())
                     logger.info("Pool created")
                 except Exception as e:
                     logger.exception(e, exc_info=True)
@@ -274,6 +272,8 @@ class Lyvego(commands.AutoShardedBot, Pool):
         except Exception as e:
             logger.exception(e, exc_info=True)
 
+    async def on_ready(self):
+        await self.startup_tasks()
         await self.change_presence(
             activity=discord.Activity(
                 name="!!help | lyvego.com",
@@ -293,9 +293,9 @@ class Lyvego(commands.AutoShardedBot, Pool):
             logger.info("Lyvego has been shutted down")
             sys.exit(0)
 
-    def run(self, token, *args, **kwargs):
+    def run(self, *args, **kwargs):
         try:
-            super().run(token, *args, **kwargs)
+            super().run(TOKEN if not self._debug else TOKEN_DEBUG, *args, **kwargs)
         except KeyboardInterrupt:
             self._exit()
 
@@ -325,5 +325,5 @@ if __name__ == "__main__":
         )
     except Exception as e:
         logger.exception(e, exc_info=True)
-    bot = Lyvego()
-    bot.run(TOKEN, reconnect=True)
+    bot = Lyvego(debug=True)
+    bot.run(reconnect=True)

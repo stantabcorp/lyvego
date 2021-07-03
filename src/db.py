@@ -163,6 +163,15 @@ class Pool:
                 await conn.commit()
                 await cur.close()
 
+    async def remove_server_role_activity(self, server_id, role_name):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    "DELETE FROM servers_change_role WHERE role_name=%s",
+                    (role_name, ))
+                await conn.commit()
+                await cur.close()
+
     async def _close(self):
         self.pool.close()
         await self.pool.wait_closed()

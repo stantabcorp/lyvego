@@ -217,7 +217,7 @@ class Receiver(commands.Cog):
         return web.Response(body=hearthbeat, status=200)
 
     async def run_server(self):
-        app = web.Application(loop=self.bot.loop, logger=logger)
+        app = web.Application(loop=self.bot.loop)
         app.router.add_post("/lyvego", self.handler)
         app.router.add_get("/ping", self.status)
         app.router.add_post("/webhook", self.webhook_handler)
@@ -225,7 +225,7 @@ class Receiver(commands.Cog):
         await runner.setup()
         site = web.TCPSite(runner, '', 9886)
         await site.start()
-        print("Server running")
+        logger.info("Server running")
 
     @commands.command()
     @commands.is_owner()
@@ -244,8 +244,15 @@ class Receiver(commands.Cog):
     @commands.guild_only()
     @commands.is_owner()
     async def setrole(self, ctx, role: discord.Role):
-        await self.bot.insert_server_role_activity(ctx.guild.id, role.id)
+        await self.bot.insert_server_role_activity(ctx.guild.id, role.name)
         await ctx.send(f"{role.name} successfully added")
+
+    @commands.command(aliases=["srr"])
+    @commands.guild_only()
+    @commands.is_owner()
+    async def setrole_remove(self, ctx: commands.Context, role: discord.Role):
+        await self.bot.remove_server_role_activity(ctx.guild.id, role.name)
+        await ctx.send(f"{role.name} successfully removed")
 
     @commands.command()
     @commands.is_owner()
