@@ -84,7 +84,7 @@ async def add_follow_command(bot: Lyvego, ctx: Union[SlashContext, commands.Cont
             icon_url=ctx.author.avatar_url
         )
         embed.set_thumbnail(
-            url=ctx.me.avatar_url
+            url=ctx.guild.me.avatar_url
         )
         try:
             await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
@@ -123,7 +123,7 @@ async def add_clip_command(bot: Lyvego, ctx: Union[SlashContext, commands.Contex
             icon_url=ctx.author.avatar_url
         )
         embed.set_thumbnail(
-            url=ctx.me.avatar_url
+            url=ctx.guild.me.avatar_url
         )
         try:
             await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
@@ -166,7 +166,7 @@ async def add_streamer_command(bot: Lyvego, ctx: Union[SlashContext, commands.Co
             icon_url=ctx.author.avatar_url
         )
         embed.set_thumbnail(
-            url=ctx.me.avatar_url
+            url=ctx.guild.me.avatar_url
         )
         try:
             await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
@@ -194,7 +194,7 @@ async def remove_event_command(bot: Lyvego, ctx: Union[SlashContext, commands.Co
             icon_url=ctx.author.avatar_url
         )
         embed.set_thumbnail(
-            url=ctx.me.avatar_url
+            url=ctx.guild.me.avatar_url
         )
         try:
             await ctx.message.add_reaction("<a:valid_checkmark:709737579460952145>")
@@ -242,7 +242,7 @@ async def topclips_command(bot: Lyvego, ctx: Union[SlashContext, commands.Contex
     )
     start = 0
     end = 8
-    __next(embed, clips, start, end, lang)
+    __next(bot, embed, clips, start, end, lang)
 
     if len(clips) * 3 <= 25:
         return await ctx.send(embed=embed)
@@ -272,7 +272,7 @@ async def topclips_command(bot: Lyvego, ctx: Union[SlashContext, commands.Contex
             return
 
         if react_list[0] == str(reaction.emoji):
-            __next(embed, clips, start, end, lang)
+            __next(bot, embed, clips, start, end, lang)
 
             start -= 8
             end -= 8
@@ -281,7 +281,7 @@ async def topclips_command(bot: Lyvego, ctx: Union[SlashContext, commands.Contex
                 start = end - 8
 
         if react_list[1] == str(reaction.emoji):
-            __next(embed, clips, start, end, lang)
+            __next(bot, embed, clips, start, end, lang)
             start += 8
             end += 8
             if end > len(clips):
@@ -303,7 +303,7 @@ async def help_command(bot: Lyvego, ctx: Union[SlashContext, commands.Context]):
     )
     embed.set_author(
         name=bot.locales[lang]["author_name_commands"],
-        icon_url=ctx.me.avatar_url
+        icon_url=ctx.guild.me.avatar_url
     )
     embed.add_field(
         name=bot.locales[lang]["help_hub_twitch"].format(
@@ -321,7 +321,7 @@ async def help_command(bot: Lyvego, ctx: Union[SlashContext, commands.Context]):
     )
     embed.set_footer(
         text="lyvego.com | help pages deleted in 5 mins",
-        icon_url=ctx.me.avatar_url
+        icon_url=ctx.guild.me.avatar_url
     )
     pages = await ctx.send(embed=embed)
 
@@ -350,7 +350,7 @@ async def help_command(bot: Lyvego, ctx: Union[SlashContext, commands.Context]):
             )
             embed.set_author(
                 name=bot.locales[lang]["author_name_commands"],
-                icon_url=ctx.me.avatar_url
+                icon_url=ctx.guild.me.avatar_url
             )
             embed.add_field(
                 name=bot.locales[lang]["help_hub_twitch"].format(
@@ -373,7 +373,7 @@ async def help_command(bot: Lyvego, ctx: Union[SlashContext, commands.Context]):
             )
             embed.set_author(
                 name=bot.locales[lang]["paginated_author_twitch_commands"],
-                icon_url=ctx.me.avatar_url
+                icon_url=ctx.guild.me.avatar_url
             )
             embed.add_field(
                 name=f"{ctx.prefix}stream <streamer_name> [message : Optional]",
@@ -410,7 +410,7 @@ async def help_command(bot: Lyvego, ctx: Union[SlashContext, commands.Context]):
             )
             embed.set_author(
                 name=bot.locales[lang]["paginated_author_settings_commands"],
-                icon_url=ctx.me.avatar_url
+                icon_url=ctx.guild.me.avatar_url
             )
             embed.add_field(
                 name=f"{ctx.prefix}setprefix <new_prefix>",
@@ -456,7 +456,7 @@ async def help_command(bot: Lyvego, ctx: Union[SlashContext, commands.Context]):
 
         embed.set_footer(
             text="lyvego.com",
-            icon_url=ctx.me.avatar_url
+            icon_url=ctx.guild.me.avatar_url
         )
         await pages.remove_reaction(reaction.emoji, user)
         await pages.edit(embed=embed)
@@ -525,7 +525,7 @@ async def invite_command(bot: Lyvego, ctx: Union[SlashContext, commands.Context]
     )
     embed.set_footer(
         text="lyvego.com",
-        icon_url=ctx.me.avatar_url
+        icon_url=ctx.guild.me.avatar_url
     )
     await ctx.send(embed=embed)
     try:

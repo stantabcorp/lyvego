@@ -31,7 +31,10 @@ class Receiver(commands.Cog):
             color=int(f"0x{em.color}", 16),
             timestamp=dctt()
         )
-        embed.set_footer(icon_url=guild.me.avatar_url)
+        try:
+            embed.set_footer(icon_url=self.bot.avatar_url)
+        except Exception as e:
+            embed.set_footer(icon_url=self.bot.default_avatar_url)
         embed.add_field(name="Viewer", value=em.stream.viewer)
         embed.add_field(name="Game", value=em.stream.game.name)
         embed.set_thumbnail(url=em.stream.game.icon)

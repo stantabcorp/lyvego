@@ -2,7 +2,7 @@
 name = "lyvego-last-version"
 version = "0.1.0"
 description = "Lyevgo packages"
-authors = ["takitsu21 <dylannbatisse@gmail.com>"]
+authors = ["takitsu21"]
 license = "MIT"
 
 [tool.poetry.dependencies]

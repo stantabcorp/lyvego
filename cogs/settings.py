@@ -1,13 +1,7 @@
-import asyncio
 import logging
-import math
 
-import discord
 from discord.ext import commands
-from discord.ext.commands import bot
 
-import errors
-import src as utils
 import src.commands as bot_commands
 
 logger = logging.getLogger("lyvego")
@@ -32,7 +26,7 @@ class Settings(commands.Cog):
     @commands.cooldown(4, 30, commands.BucketType.user)
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
-    async def add_follow(self, ctx: commands.Context, streamer: str, *, message):
+    async def add_follow(self, ctx: commands.Context, streamer: str, *, message=""):
         await bot_commands.add_follow_command(self.bot, ctx, streamer, message)
 
     @commands.command(name="clips", aliases=["clip"])
@@ -73,7 +67,7 @@ class Settings(commands.Cog):
     @commands.cooldown(4, 30, commands.BucketType.user)
     @commands.guild_only()
     async def topclip(self, ctx: commands.Context, streamer: str, amount=5):
-        await bot_commands.topclips_command(bot, ctx, streamer, amount)
+        await bot_commands.topclips_command(self.bot, ctx, streamer, amount)
 
     @commands.command(aliases=["locales"])
     @commands.is_owner()

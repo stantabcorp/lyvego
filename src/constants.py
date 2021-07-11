@@ -6,7 +6,7 @@ load_dotenv()
 
 HOST = os.getenv("HOST")
 PORT = 3306
-USER = os.getenv("USER")
+DB_USER = os.getenv("DB_USER")
 PASSWORD = os.getenv("PASSWORD")
 API_KEY = os.getenv("API_KEY")
 AUTHORIZATION = os.getenv("AUTHORIZATION")

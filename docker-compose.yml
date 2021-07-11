@@ -5,3 +5,5 @@ services:
         image: lyvego
         build: .
         command: python main.py
+        ports:
+            - "9886"
