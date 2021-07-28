@@ -110,13 +110,14 @@ class Lyvego(commands.AutoShardedBot, Pool):
                 logger.exception(f"Fail to load {file}")
 
     async def on_guild_join(self, guild: discord.Guild):
+        icon = None
         try:
             acc = 0
             backoff_time = 2
-            try:
-                icon = guild.icon_url
-            except:
-                icon = None
+            # try:
+            #     icon = guild.icon_url
+            # except:
+            #     icon = None
             r = await self.http_session.request(
                 method="POST",
                 url="https://api.lyvego.com/v1/bot/server",
@@ -208,14 +209,15 @@ class Lyvego(commands.AutoShardedBot, Pool):
         bot_guilds_ids = []
         acc_removed = 0
         acc_added = 0
+        icon = None
         for bguild in self.guilds:
             bot_guilds_ids.append(str(bguild.id))
             if not self._value_exist(servers, str(bguild.id)):
                 try:
-                    try:
-                        icon = bguild.icon_url
-                    except:
-                        icon = None
+                    # try:
+                    #     icon = bguild.icon_url
+                    # except:
+                    #     icon = None
                     acc_added += 1
                     await self.http_session.request(
                         method="POST",
@@ -225,7 +227,7 @@ class Lyvego(commands.AutoShardedBot, Pool):
                             "discord_id": bguild.id,
                             "owner_id": bguild.owner_id,
                             "name": bguild.name,
-                            "icon": icon,
+                            "icon": None,
                             "region": bguild.region.name
                         }
                     )
@@ -298,8 +300,8 @@ class Lyvego(commands.AutoShardedBot, Pool):
                         autocommit=True
                     )
                     # TODO : make more secure way to verify guilds
-                    # if not self._debug:
-                    #     self.loop.create_task(self._verify_servers())
+                    if not self._debug:
+                        self.loop.create_task(self._verify_servers())
                     logger.info("Pool created")
                 except Exception as e:
                     logger.exception(e, exc_info=True)
@@ -348,7 +350,7 @@ def multi_tokens_runner(loop: asyncio.AbstractEventLoop, bot: Lyvego, *tokens):
 
 
 if __name__ == "__main__":
-    debug = True
+    debug = False
     if not debug:
         try:
             # Debugger
