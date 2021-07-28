@@ -26,7 +26,7 @@ class Settings(commands.Cog):
     @commands.cooldown(4, 30, commands.BucketType.user)
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
-    async def add_follow(self, ctx: commands.Context, streamer: str, *, message=""):
+    async def add_follow(self, ctx: commands.Context, streamer: str, *message):
         await bot_commands.add_follow_command(self.bot, ctx, streamer, message)
 
     @commands.command(name="clips", aliases=["clip"])
@@ -40,7 +40,7 @@ class Settings(commands.Cog):
     @commands.cooldown(4, 30, commands.BucketType.user)
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
-    async def add_streamer(self, ctx: commands.Context, streamer: str, *, message):
+    async def add_streamer(self, ctx: commands.Context, streamer: str, *message):
         await bot_commands.add_streamer_command(self.bot, ctx, streamer, message)
 
     @commands.command(aliases=["remove"])
