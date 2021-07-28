@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import math
 from typing import Union
 
@@ -9,6 +10,9 @@ from discord_slash.context import SlashContext
 import errors
 import src as utils
 from main import Lyvego
+
+
+logger = logging.getLogger("lyvego")
 
 
 def __next(bot: Lyvego, embed: discord.Embed, clips, start, end, lang):
@@ -92,6 +96,7 @@ async def add_follow_command(bot: Lyvego, ctx: Union[SlashContext, commands.Cont
             pass
         await ctx.send(embed=embed)
     else:
+        logger.debug(f"Add follow : STATUS CODE {resp.status} for {streamer}")
         raise errors.StreamerNotFound(
             bot.locales[lang]["error_streamer_not_found"].format(ctx.author))
 
@@ -131,6 +136,7 @@ async def add_clip_command(bot: Lyvego, ctx: Union[SlashContext, commands.Contex
             pass
         await ctx.send(embed=embed)
     else:
+        logger.debug(f"Add clip : STATUS CODE {resp.status} for {streamer}")
         raise errors.StreamerNotFound(
             bot.locales[lang]["error_streamer_not_found"].format(ctx.author))
 
@@ -174,6 +180,7 @@ async def add_streamer_command(bot: Lyvego, ctx: Union[SlashContext, commands.Co
             pass
         await ctx.send(embed=embed)
     else:
+        logger.debug(f"Add streamer : STATUS CODE {resp.status} for {streamer}")
         raise errors.StreamerNotFound(
             bot.locales[lang]["error_streamer_not_found"].format(ctx.author))
 
@@ -202,6 +209,7 @@ async def remove_event_command(bot: Lyvego, ctx: Union[SlashContext, commands.Co
             pass
         await ctx.send(embed=embed)
     else:
+        logger.debug(f"Remove {event} : STATUS CODE {resp.status} for {streamer}")
         raise errors.StreamerNotFound(
             bot.locales[lang]["error_streamer_not_found"].format(ctx.author))
 
